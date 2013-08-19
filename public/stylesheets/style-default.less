@@ -1,0 +1,385 @@
+@import "basic.less";
+
+/*********************************************************************************/
+/* Section/Article Types                                                         */
+/*********************************************************************************/
+
+.is-search {
+  form {
+    position: relative;
+  }
+  input {
+    position: relative;
+    padding-right: 34px;
+  }
+  form:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    margin-top: -12px;
+    width: 24px;
+    height: 24px;
+    background-image: url('../images/sprites.png');
+    background-position: -96px 0px;
+  }
+}
+
+/*********************************************************************************/
+/* Wrapper                                                                       */
+/*********************************************************************************/
+
+#wrapper {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+/*********************************************************************************/
+/* Logo                                                                          */
+/*********************************************************************************/
+
+#logo {
+  border-bottom: 1px solid #fff;
+  font-size: 12px;
+  text-align: center;
+  h1 {
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 0.1em;
+    font-variant: small-caps;
+    margin: 0;
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+/*********************************************************************************/
+/* Sidebar                                                                       */
+/*********************************************************************************/
+
+#sidebar {
+  color: #929da4;
+  text-shadow: -1px -1px 0px rgba(0,0,0,0.5);
+  background: #364050;
+  box-shadow: inset -1px 0 0 0 rgba(255,255,255,0.15), inset -0.1em 0 0.5em 0 rgba(0,0,0,0.25);
+  width: 224px;
+  height: 100%;
+  padding: 1em;
+  overflow: auto;
+  form input,
+  form select,
+  form textarea {
+    border: 0;
+  }
+  section,
+  nav {
+    position: relative;
+  }
+  strong, b {
+    color: #fff;
+  }
+  a {
+    color: #d4dde0;
+      white-space: nowrap;
+  }
+  h2, h3, h4, h5, h6 {
+    color: #fff;
+    font-size: 15px;
+    font-variant: small-caps;
+  }
+  header {
+    margin: 0 0 1.25em 0;
+  }
+  section,
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  nav {
+    margin: 2em 0 0 0;
+    font-size: 0.9em;
+    > ul > li > ul {
+      display: none;
+    }
+    &.main {
+      li {
+        padding: 0.5em 0 0.5em 0;
+      }
+    }
+    li {
+      border-top: solid 1px rgba(0,0,0,0.25);
+      box-shadow: inset 0px 1px 0px 0px rgba(255,255,255,0.075);
+      a {
+        padding-left: 1em;
+        text-decoration: none;
+        -moz-transition: color .25s ease-in-out, color .25s ease-in-out;
+        -webkit-transition: color .25s ease-in-out, color .25s ease-in-out;
+        -o-transition: color .25s ease-in-out, color .25s ease-in-out;
+        -ms-transition: color .25s ease-in-out, color .25s ease-in-out;
+        transition: color .25s ease-in-out, color .25s ease-in-out;
+      }
+    }
+    li:first-child {
+      border: 0;
+      box-shadow: none;
+      padding-top: 0;
+    }
+    li:last-child {
+      padding-bottom: 0;
+    }
+    li:hover a {
+      color: #fff;
+    }
+    li.current {
+      background-color: rgba(0, 122, 255, 0.15);
+      a {
+        font-weight: bold;
+        color: #fff;
+      }
+    }
+  }
+
+  .is-subscriptions {
+    li {
+      a {
+        padding: 4px 0;
+        width: 100%;
+        display: block;
+      }
+      div {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: inline-block;
+        width: 75%;
+      }
+    }
+  }
+  .badge {
+    float: right;
+    background-color: #181818;
+  }
+}
+
+/*********************************************************************************/
+/* Content                                                                       */
+/*********************************************************************************/
+
+#content {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  width: 100%;
+}
+
+#content-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  max-width: 900px;
+}
+
+/*********************************************************************************/
+/* Copyright                                                                     */
+/*********************************************************************************/
+
+#copyright {
+  p {
+    opacity: 0.75;
+    text-align: center;
+  }
+  a {
+    color: inherit !important;
+  }
+}
+
+/*********************************************************************************/
+/* Timeline                                                                      */
+/*********************************************************************************/
+.timeline {
+  width: 100%;
+  height: 100%;
+  > header {
+    height: 65px;
+    margin: 0;
+    padding: 10px;
+    background-color: #fff;
+    border-bottom: 2px solid #ddd;
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      height: 28px;
+      overflow: hidden;
+      word-break: break-all;
+      a {
+        text-decoration: none;
+      }
+    }
+    .hint {
+      display: block;
+      font-size: 14px;
+      line-height: 17px;
+      color: #B4B3B2;
+      b {
+        color: inherit;
+      }
+    }
+    .toolbar {
+      float: right;
+    }
+  }
+  > .content {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-top: 64px;
+    overflow: auto;
+    width: 100%;
+    article {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-left-width: 5px;
+      margin: 0;
+      &.seen {
+        border-left-color: #bbb;
+      }
+      &.not-seen, &.kept-not-seen {
+        border-left-color: #4d90f0;
+      }
+      h1.ending {
+        text-align: center;
+        margin: 0;
+        font-size: 2em;
+        color: #ccc;
+        padding: 100px 0;
+      }
+      header {
+        padding: 10px;
+        margin: 0;
+        time {
+          float: right;
+          color: #666;
+          font-size: 90%;
+        }
+        span {
+          color: #666;
+          display: block;
+          font-size: 90%;
+        }
+        h1 {
+          font-weight: bold;
+          font-size: 120%;
+          margin: 5px 0;
+          max-width: 650px;
+          line-height: 16px;
+          height: 16px;
+          display: inline;
+          a {
+            text-decoration: none;
+          }
+          i {
+            cursor: pointer;
+            vertical-align: initial;
+            margin-right: 5px;
+          }
+        }
+      }
+      > div {
+        padding: 10px;
+        max-width: 650px;
+        text-align: justify;
+        overflow: auto;
+        img {
+          max-width: 100%;
+        }
+        pre {
+          white-space: pre-line;
+        }
+        p {
+          margin: 0;
+          line-height: 1em;
+        }
+      }
+      footer {
+        line-height: 10px;
+        padding: 5px;
+        background-color: #fafafa;
+        color: #666;
+        border-top: 1px solid #ebebeb;
+        a {
+          cursor: pointer;
+          opacity: 0.25;
+          margin: 0 10px;
+        }
+        a:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+/*********************************************************************************/
+/* Manage                                                                        */
+/*********************************************************************************/
+.manage {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  > header {
+    padding: 10px;
+    margin: 0;
+    border-bottom: 2px solid #ddd;
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+  }
+  > .content {
+    padding: 5px;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-top: 63px;
+    width: 100%;
+    table {
+      a {
+        word-break: break-all;
+      }
+      button {
+        display: none;
+      }
+    }
+  }
+  tr:hover {
+    .flag {
+      display: initial;
+    }
+    button {
+      display: initial;
+    }
+  }
+}
+
+.flag {
+  display: none;
+  color: #FFF;
+  font-size: 0.8em;
+  text-decoration: none;
+  padding: 0 4px;
+  font-variant: small-caps;
+  font-weight: bold;
+  &.rss {
+    background-color: #F0721E;
+  }
+  &.html {
+    background-color: #409AB6;
+  }
+  &.timeline {
+    background-color: #364050;
+  }
+}

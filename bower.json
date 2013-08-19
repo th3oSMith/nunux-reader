@@ -1,0 +1,45 @@
+{
+  "name": "reader",
+  "version": "0.0.1",
+  "main": "main.js",
+  "dependencies": {
+    "bootstrap": "~2.3.2",
+    "html5shiv": "~3.6.2",
+    "angular": "~1.0.7",
+    "angular-sanitize": "~1.0.7",
+    "moment": "~2.0.0",
+    "jquery": "~2.0.2",
+    "humane-js": "~3.1.0",
+    "ngUpload": "~0.3.8"
+  },
+  "exportsOverride": {
+    "jquery": {
+      "": "jquery.*"
+    },
+    "bootstrap": {
+      "": ["./less/*.less", "./docs/assets/js/bootstrap.js"]
+    },
+    "html5shiv": {
+      "": "dist/html5shiv.js"
+    },
+    "angular": {
+      "": "*.js"
+    },
+    "angular-sanitize": {
+      "": "*.js"
+    },
+    "moment": {
+      "": "min/moment.min.js"
+    },
+    "humane-js": {
+      "": "*.js"
+    },
+    "ngUpload": {
+      "": "ng-upload.min.js"
+    }
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules"
+  ]
+}
