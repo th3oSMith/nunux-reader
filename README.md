@@ -5,7 +5,7 @@ The super-fast-minimalist-nosql-opensource Google Reader revival.
 Features:
 
  * Faster than light thanks to Redis and Node.js
- * Dynamic GUI thanks to AngularJS 
+ * Dynamic GUI thanks to AngularJS
  * Responsive Web Design
  * Login with Google OpenID or Mozilla Persona
  * OPML import/export
@@ -13,7 +13,8 @@ Features:
  * Auto read article on scroll
  * Save articles
  * Keep article as not read
- * Powerfull ireactive aggregator daemon (no cron job)
+ * Powerfull reactive aggregator daemon
+ * Support of PubSubHubbud
  * RESTFul JSON API
  * 99% Javascript!
 

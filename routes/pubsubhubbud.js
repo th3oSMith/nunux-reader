@@ -19,7 +19,7 @@ module.exports = function(app){
     var lease = req.query['hub.lease_seconds'];
     var verifyToken = req.query['hub.verify_token'];
 
-    if ('subscribe' == mode || 'unsubscribe' == mode) {
+    if (topic && ('subscribe' == mode || 'unsubscribe' == mode)) {
       logger.info('PubSubHubBud %s confirmation callback received for %s', mode, topic);
       async.waterfall(
         [
@@ -28,7 +28,7 @@ module.exports = function(app){
           },
           function(feed, callback) {
             Feed.update(feed, {
-              pshbEnabled: 'subscribe' == mode,
+              pshbStatus: mode,
               pshbLease: lease
             }, callback);
           },
@@ -50,10 +50,11 @@ module.exports = function(app){
   /**
    * Update PubSubHubBud feed status.
    */
-  app.post('/pubsubhubbub/callback', app.ensurePubSubHubBud, function(req, res, next) {
-    var fetchedFeed = req.body;
-    Feed.parse(req.body, null, function(err, articles) {
-      if (err) return next(err);
+  app.post('/pubsubhubbud/callback', app.ensurePubSubHubBud, function(req, res, next) {
+    Feed.updateArticles(req.rawBody, null, function(err) {
+      if (err) {
+        logger.error('PSHB REQUEST: %s', err);
+      }
       res.send(200);
     });
   });

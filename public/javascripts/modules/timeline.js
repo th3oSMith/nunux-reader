@@ -1,11 +1,11 @@
 'use strict';
 
-angular.module('TimelineModule', [])
+angular.module('TimelineModule', ['ui.qrcode'])
 .controller('TimelineCtrl', function ($scope, $http, $routeParams, $rootScope) {
   $scope.timelineName = $routeParams.timeline;
   $rootScope.currentPage = $routeParams.timeline;
   $scope.url = '/timeline/' + $scope.timelineName;
-  $scope.order = 'ASC';
+  $scope.order = $scope.timelineName == 'archive' ? 'DESC' : 'ASC';
   $scope.isShowingAllItems = false;
   $scope.haveAllItems = $scope.timelineName != 'global' && $scope.timelineName != 'archive';
   $scope.isReadable = function() {
@@ -39,6 +39,7 @@ angular.module('TimelineModule', [])
 
   $scope.toggleShow = function() {
     $scope.isShowingAllItems = !$scope.isShowingAllItems;
+    //$scope.order = $scope.isShowingAllItems ? 'DESC' : 'ASC';
     $scope.refresh();
   };
 
@@ -61,7 +62,8 @@ angular.module('TimelineModule', [])
 
   $scope.autoMarkAsRead = function(aid) {
     var article = $scope.getArticle(aid);
-    if (article && !article.read && !article.keepUnRead) {
+    if (article && !article.read && !article.keepUnRead && !article.reading) {
+      article.reading = true;
       $scope.markAsRead(aid);
     }
   };
@@ -115,6 +117,7 @@ angular.module('TimelineModule', [])
         article.fold = false;
         article.keepUnRead = false;
         article.read = false;
+        article.reading = false;
         article.saved = $scope.timelineName == 'archive';
         $scope.articles.push(article);
       }
@@ -209,30 +212,35 @@ angular.module('TimelineModule', [])
   };
 }
 ])
-.directive('timelineArticle', function () {
+.directive('timelineArticle', ['$compile', function ($compile) {
   return {
-    link: function (scope, elem, attrs) {
+    link: function ($scope, $elem, attrs) {
       // watch the expression, and update the UI on change.
-      var pathArray = scope.article.link.split( '/' );
+      var pathArray = $scope.article.link.split( '/' );
       var baseUrl = pathArray[0] + '//' + pathArray[2];
-      scope.$watch(attrs.timelineArticle, function(value) {
-        elem.html(value);
-        $('script', elem).filter('script[src^="http://feeds.feedburner.com"]').remove();
-        $('a', elem).each(function() {
+      $scope.$watch(attrs.timelineArticle, function(value) {
+        var $content = $('<div>').html(value);
+        $('script', $content).filter('script[src^="http://feeds.feedburner.com"]').remove();
+        $('a', $content).each(function() {
           $(this).attr('target', '_blank');
           var href = $(this).attr('href');
           if(href && !href.match(/^\s*http/g)) {
             $(this).attr('href', baseUrl + '/' + href);
           }
         });
-        $('img', elem).each(function() {
-          var src = $(this).attr('src');
-          if(!src.match(/^\s*http/g)) {
-            $(this).attr('src', baseUrl + '/' + src);
+        $('img', $content).each(function() {
+          var src = $(this).attr('data-src');
+          if (src) {
+            if(!src.match(/^\s*http/g)) {
+              src = baseUrl + '/' + src;
+            }
+            $(this).attr('bn-lazy-load', src);
+            $(this).removeAttr('data-src');
           }
         });
+        $elem.html($compile($('<div>').append($content).html())($scope));
       });
     }
   };
-});
+}]);
 
