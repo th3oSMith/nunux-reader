@@ -24,7 +24,9 @@ module.exports = function(grunt) {
             moment: false,
             alert: false,
             confirm: false,
-            humane: false
+            humane: false,
+            qrcode: false,
+            Mousetrap: false
           }
         },
         src: ['public/javascripts/**/*.js']
@@ -48,7 +50,7 @@ module.exports = function(grunt) {
         },
         files: {
           'public-build/stylesheets/style.css': 'public/stylesheets/style.less',
-          'public-build/stylesheets/home.css': 'public/stylesheets/home.less'
+          'public-build/stylesheets/welcome.css': 'public/stylesheets/welcome.less'
         }
       }
     },
@@ -68,21 +70,62 @@ module.exports = function(grunt) {
         dest: 'public-build/javascripts'
       }
     },
+    concat: {
+      options: {
+        separator: ';',
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+      },
+      dist: {
+        src: [
+          'public/lib/jquery/jquery.min.js',
+          'public/lib/bootstrap/bootstrap.min.js',
+          'public/lib/moment/moment.min.js',
+          'public/lib/qrcode-generator/qrcode.js',
+          'public/lib/humane-js/humane.min.js',
+          'public/lib/mousetrap/mousetrap.min.js',
+          'public/lib/angular/angular.min.js',
+          'public/lib/angular/angular-sanitize.min.js',
+          'public/lib/ngUpload/ng-upload.min.js',
+          'public-build/javascripts/app.js',
+          'public-build/javascripts/modules/*.js'
+        ],
+        dest: 'public-build/javascripts/reader.min.js'
+      }
+    },
     copy: {
       main: {
         files: [
+          {expand: true, cwd: 'public/', src: ['lib/**'], dest: 'public-build/'},
           {expand: true, cwd: 'public/', src: ['icons/**'], dest: 'public-build/'},
+          {expand: true, cwd: 'public/', src: ['fonts/**'], dest: 'public-build/'},
           {expand: true, cwd: 'public/', src: ['images/**'], dest: 'public-build/'},
           {expand: true, cwd: 'public/', src: ['views/**'], dest: 'public-build/'},
-          {expand: true, cwd: 'public/', src: ['lib/**'], dest: 'public-build/'},
           {expand: true, cwd: 'public/', src: ['robots.txt'], dest: 'public-build/'}
         ]
+      }
+    },
+    manifest: {
+      generate: {
+        options: {
+          basePath: 'public-build',
+          cache: ['javascripts/reader.min.js'],
+          network: ['*', 'http://*', 'https://*'],
+          //fallback: ['/ /offline.html'],
+          verbose: false,
+          timestamp: true
+        },
+        src: [
+          'stylesheets/*.css',
+          'views/*',
+          'fonts/*'
+        ],
+        dest: 'public-build/manifest.appcache'
       }
     }
   });
 
   // Register building task
-  grunt.registerTask('build', ['less','ngmin', 'uglify','copy']);
+  grunt.registerTask('build', ['less','ngmin','uglify','concat','copy','manifest']);
   grunt.registerTask('install', ['clean','build']);
   grunt.registerTask('default', 'mochaTest');
 }

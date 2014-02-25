@@ -7,16 +7,16 @@ angular.module('ManageModule', ['ngUpload'])
   $scope.predicate = 'title';
 
   $scope.refresh = function() {
-    $http.get('/subscription').success(function (data) {
+    $http.get('/api/subscription').success(function (data) {
       $scope.subscriptions = data;
     });
   };
 
   $scope.getStatusClass = function(feed) {
-    var result = 'inverse';
+    var result = 'default';
     if (feed.status) {
-      if (feed.status.match(/^error/g)) result = 'important';
-      else if (feed.pshbStatus == 'subscribe') result = 'info';
+      if (feed.status.match(/^error/g)) result = 'danger';
+      else if (feed.pshbStatus == 'subscribe') result = 'primary';
       else result = 'success';
     }
     return result;
@@ -55,7 +55,7 @@ angular.module('ManageModule', ['ngUpload'])
 
   $scope.unSubscribe = function(feed) {
     if (confirm('Do you really want to unsubscribe from "' + feed.title + '" ?')) {
-      $http.delete('/subscription/' + feed.id)
+      $http.delete('/api/subscription/' + feed.id)
       .success(function(data) {
         $scope.message = {clazz: 'alert-success', text: 'Feed "' + feed.title + '" successfully removed.'};
         for (var i = 0; i < $scope.subscriptions.length; i++) {
@@ -68,14 +68,14 @@ angular.module('ManageModule', ['ngUpload'])
         }
       })
       .error(function() {
-        $scope.message = {clazz: 'alert-error', text: 'Unable to remove Feed "' + feed.title + '"!'};
+        $scope.message = {clazz: 'alert-danger', text: 'Unable to remove Feed "' + feed.title + '"!'};
       });
     }
   };
 
   $scope.subscribe = function(url) {
     if (url) {
-      $http.post('/subscription', {url: url})
+      $http.post('/api/subscription', {url: url})
       .success(function(feed) {
         $scope.message = {clazz: 'alert-success', text: 'Feed "' + feed.title + '" successfully added.'};
         $scope.subscriptions.push(feed);
@@ -83,7 +83,7 @@ angular.module('ManageModule', ['ngUpload'])
         $rootScope.$broadcast('app.event.subscriptions.add', feed);
       })
       .error(function() {
-        $scope.message = {clazz: 'alert-error', text: 'Unable to remove Feed "' + url + '"!'};
+        $scope.message = {clazz: 'alert-danger', text: 'Unable to remove Feed "' + url + '"!'};
       });
     }
   };
@@ -97,7 +97,7 @@ angular.module('ManageModule', ['ngUpload'])
         res.error = res.error ? res.error[1] : 'Unknown';
       }
       if (res.error) {
-        $scope.message = {clazz: 'alert-error', text: 'Unable to import file: ' + res.error};
+        $scope.message = {clazz: 'alert-danger', text: 'Unable to import file: ' + res.error};
       } else {
         $scope.message = {clazz: 'alert-success', text: content.length + ' subscription(s) successfully imported.'};
         $scope.refresh();

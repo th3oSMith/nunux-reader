@@ -4,10 +4,9 @@
 
   <meta charset="utf-8">
   <title><%= info.title %></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <meta name="description" content="<%= info.description %>" />
   <meta name="author" content="">
-  <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700|Open+Sans+Condensed:300,700" rel="stylesheet" />
   <link rel="stylesheet" href="stylesheets/style.css" />
 
   <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -23,14 +22,8 @@
   <link rel="shortcut icon" href="icons/favicon.png">
 
 </head>
-<body class="left-sidebar" ng-app="ReaderApp" >
+<body ng-app="ReaderApp" >
   <div id="wrapper">
-    <div id="title-bar">
-      <div class="toggle" onclick="$('#sidebar').toggle();"></div>
-      <div class="title">
-        <h1><%= info.name %></h1>
-      </div>
-    </div>
     <div id="content">
       <div id="content-inner" ng-view>
       </div>
@@ -38,61 +31,44 @@
 
     <div id="sidebar" ng-controller="SidebarCtrl">
       <div id="logo">
-        <h1><a href="javascript:
-(function(){RDR_REALM='<%= realm %>';RDR_SCR=document.createElement('SCRIPT');
-RDR_SCR.type='text/javascript';RDR_SCR.src=RDR_REALM+'/javascripts/bookmarklet.js';
-document.getElementsByTagName('head')[0].appendChild(RDR_SCR)})();"
-onclick="return false;" title="Drag me in your toolbar!"><%= info.name %></a></h1>
+        <img src="http://www.gravatar.com/avatar/<%= user.gravatar %>?s=30" alt="<%= user.uid %>" title="<%= user.uid %>" ng-click="showProfile()" />
+        <h1><%= info.name %></h1>
+      </div>
+      <div class="list-group">
+        <a href="#timeline/global" target="_self" class="list-group-item" title="View all fresh items [g h]" ng-class="{active: $root.currentPage == 'global'}">
+          <span class="badge">{{globalSize}}</span>
+          <span class="glyphicon glyphicon-fire"></span>
+          All items
+        </a>
+        <a href="#timeline/archive" target="_self" class="list-group-item" title="View archived items [g a]" ng-class="{active: $root.currentPage == 'archive'}">
+          <span class="badge">{{archiveSize}}</span>
+          <span class="glyphicon glyphicon-floppy-disk"></span>
+          Saved items
+        </a>
+        <a href="#manage" class="list-group-item" title="Manage your subscriptions [g u]" ng-class="{active: $root.currentPage == 'manage'}">
+          <span class="glyphicon glyphicon-cog"></span>
+          Manage
+        </a>
       </div>
 
-      <nav class="main">
-        <ul>
-          <li ng-class="{current: $root.currentPage == 'global'}" >
-          <i class="icon-th icon-white"></i>
-          <a href="#timeline/global" class="menu-global-timeline">
-            All items <span class="badge">{{globalSize}}</span>
-          </a>
-          </li>
-          <li ng-class="{current: $root.currentPage == 'archive'}" >
-          <i class="icon-bookmark icon-white"></i>
-          <a href="#timeline/archive" class="menu-archive-timeline" >
-            Saved items <span class="badge">{{archiveSize}}</span>
-          </a>
-          </li>
-          <li ng-class="{current: $root.currentPage == 'manage'}">
-          <i class="icon-wrench icon-white"></i>
-          <a href="#manage" class="menu-manage">Manage</a>
-          </li>
-        </ul>
-      </nav>
-
-      <!-- Search -->
-      <section class="is-search" style="display: none;">
-        <form method="post" action="#">
-          <input type="text" class="text" name="search" placeholder="Search" />
-        </form>
-      </section>
-
-      <!-- Subscriptions -->
-      <nav class="is-subscriptions">
-        <header>
-          <h2>
-            Subscriptions ({{ timelines.length - 2 }})
-            <a href="/subscription/export" target="_blank" title="Export my feeds" style="float: right;">
-              <i class="icon-download"></i>
-            </a>
-          </h2>
-        </header>
-        <ul>
-          <li ng-repeat="timeline in timelines | filter:isSubscription | orderBy:'-size'" ng-class="{current: $root.currentPage == timeline.feed.id}">
-          <a href="#timeline/{{ timeline.feed.id }}" title="{{ timeline.feed.title }}" >
-            <div>{{ timeline.feed.title }}</div>
-            <span class="badge" ng-show="timeline.size">{{ timeline.size }}</span>
-          </a>
-          </li>
-        </ul>
-      </nav>
-
+      <h2>
+        <span ng-click="switchOrder()">Subscriptions ({{ timelines.length - 2 }})</span>
+        <a href="/api/subscription/export" target="_blank" title="Export my feeds" style="float: right;">
+          <span class="glyphicon glyphicon-cloud-download"></span>
+        </a>
+      </h2>
+      <div class="list-group">
+        <a
+          href="#timeline/{{ timeline.feed.id }}"
+          title="{{ timeline.feed.title }}"
+          class="list-group-item"
+          target="_self"
+          ng-repeat="timeline in timelines | filter:isSubscription | orderBy:order"
+          ng-class="{active: $root.currentPage == timeline.feed.id}">
+          <span class="badge" ng-show="timeline.size">{{ timeline.size }}</span>
+          {{ timeline.feed.title }}
+        </a>
+      </div>
       <!-- Copyright -->
       <div id="copyright">
         <p>&copy; 2013 NUNUX.org</p>
@@ -101,31 +77,55 @@ onclick="return false;" title="Drag me in your toolbar!"><%= info.name %></a></h
   </div><!-- end wrapper -->
 </div>
 
+<% if (env == 'production') {%>
+<script src="javascripts/reader.min.js"></script>
+<script>
+if (window.applicationCache) {
+  applicationCache.addEventListener('updateready', function() {
+      if (confirm('An update is available. Reload now?')) {
+      window.location.reload();
+      }
+  });
+}
+</script>
+<% } else { %>
 <script src="lib/jquery/jquery.min.js"></script>
-<script src="lib/bootstrap/bootstrap.js"></script>
+<script src="lib/bootstrap/bootstrap.min.js"></script>
 <script src="lib/moment/moment.min.js"></script>
 <script src="lib/qrcode-generator/qrcode.js"></script>
 <script src="lib/humane-js/humane.min.js"></script>
+<script src="lib/mousetrap/mousetrap.min.js"></script>
 <script src="lib/angular/angular.min.js"></script>
-<script src="lib/angular-strap/angular-strap.min.js"></script>
-<script src="lib/angular-sanitize/angular-sanitize.min.js"></script>
+<script src="lib/angular/angular-sanitize.min.js"></script>
 <script src="lib/ngUpload/ng-upload.min.js"></script>
 
 <script src="javascripts/app.js"></script>
+<script src="javascripts/modules/angular-mobile.js"></script>
+<script src="javascripts/modules/angular-carousel.js"></script>
 <script src="javascripts/modules/sidebar.js"></script>
 <script src="javascripts/modules/timeline.js"></script>
 <script src="javascripts/modules/manage.js"></script>
 <script src="javascripts/modules/lazy.js"></script>
+<script src="javascripts/modules/dialog.js"></script>
 <script src="javascripts/modules/qrcode.js"></script>
+<% } %>
 
 <script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-ga('create', '<%= gaId %>', '<%= gaDomain %>');
-ga('send', 'pageview');
+function toggleMenu() {
+  $('#wrapper').toggleClass('open');
+}
+</script>
+<script type="text/ng-template" id="/views/profile.html">
+  <img src="http://www.gravatar.com/avatar/<%= user.gravatar %>?s=100" alt="<%= user.uid %>" title="<%= user.uid %>" />
+  <p>
+    <strong><%= user.username %></strong>
+    <br/>
+    <%= user.uid %>
+    <br/>
+    <i>Register {{ <%= user.registrationDate %> | date | fromNow }}</i>
+    <br/><br/>
+    <a href='/logout' class='btn btn-danger'><span class='glyphicon glyphicon-off'></span> logout</a>
+  </p>
 </script>
 </body>
 </html>

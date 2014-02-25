@@ -44,6 +44,7 @@ app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(express.logger('dev'));
+  app.use(express.compress());
   app.use(express.cookieParser());
   app.use(express.cookieSession({secret: process.env.APP_SESSION_SECRET || 'NuNUXReAdR_'}));
   app.use(express.bodyParser());
@@ -70,7 +71,8 @@ app.configure('development', function() {
 });
 
 app.configure('production', function() {
-  app.use(express.static(path.join(__dirname, 'public-build')));
+  var oneDay = 86400000;
+  app.use(express.static(path.join(__dirname, 'public-build'), {maxAge: oneDay}));
   app.use(errorHandler);
   logger.setLevel('info');
 });
@@ -134,8 +136,18 @@ app.post('/auth/browserid', passport.authenticate('browserid', {
   successRedirect: '/', failureRedirect: '/'
 }));
 
+app.get('/logout', function(req, res, next) {
+  req.logout();
+  res.redirect('/');
+});
+
 app.ensureAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
+  res.send(401);
+};
+
+app.ensureIsAdmin = function(req, res, next) {
+  if (req.user.uid == process.env.APP_ADMIN) { return next(); }
   res.send(403);
 };
 
@@ -144,7 +156,7 @@ require('./routes/index')(app);
 require('./routes/timeline')(app);
 require('./routes/subscription')(app);
 require('./routes/pubsubhubbud')(app);
-require('./routes/archive')(app);
+require('./routes/admin')(app);
 
 http.createServer(app).listen(app.get('port'), function() {
   logger.info('%s web server listening on port %s (%s mode)',
