@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"github.com/zenazn/goji/web"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -24,8 +23,6 @@ func SuperSecure(c *web.C, h http.Handler) http.Handler {
 
 		// On regarde si les identifiants sont enregistrés
 		credentials, err := base64.StdEncoding.DecodeString(auth[6:])
-
-		log.Println("Auth")
 
 		if err != nil || isUser(string(credentials)) != true {
 			pleaseAuth(w)

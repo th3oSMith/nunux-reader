@@ -21,11 +21,11 @@ func main() {
 	goji.Get("/", Root)
 
 	// Page nécessitant une authentification
-	admin := web.New()
-	goji.Handle("/admin/*", admin)
-	admin.Use(SuperSecure)
+	api := web.New()
+	goji.Handle("/api/*", api)
+	api.Use(SuperSecure)
 
-	admin.Get("/admin/", AdminRoot)
+	api.Get("/api/subscription", SubscriptionPage)
 
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes
