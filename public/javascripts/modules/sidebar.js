@@ -12,7 +12,7 @@ angular.module('SidebarModule', [])
   };
 
   $scope.isSubscription = function(item) {
-    return (item.feed);
+    return (item.feed.id);
   };
 
   $scope.$on('app.event.subscriptions.add', $scope.refresh);

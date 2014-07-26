@@ -26,6 +26,9 @@ func main() {
 	api.Use(SuperSecure)
 
 	api.Get("/api/subscription", SubscriptionPage)
+	api.Get("/api/timeline", TimelinePage)
+	api.Get("/api/timeline/", http.RedirectHandler("/api/timeline", 301))
+	api.Get("/api/timeline/:name/status", TimelineStatus)
 
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes
