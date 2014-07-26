@@ -36,6 +36,20 @@ type TimelineData struct {
 	Articles []Article `json:"articles"`
 }
 
+type Article struct {
+	Author      string    `json:"author"`
+	Date        time.Time `json:"date"`
+	Description string    `json:"description"`
+	Guid        string    `json:"guid"`
+	Id          string    `json:"id"`
+	Link        string    `json:"link"`
+	Origlink    string    `json:"origlink"`
+	Pubdate     time.Time `json:"pubdate"`
+	Summary     string    `json:"summary"`
+	Title       string    `json:"title"`
+	Fid         string    `json:"fid"`
+}
+
 func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 
 	subs := []Feed{
@@ -84,4 +98,25 @@ func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, string(b))
+}
+
+func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	timelineName := c.URLParams["name"]
+	log.Println(timelineName)
+
+	data := TimelineData{"next?", []Article{
+		{"auithor", time.Now(), "desc", "guid", "id", "orig", "pubd", time.Now(), "till", "fid", "ttt"},
+		{"auithora", time.Now(), "desc", "guid", "id", "orig", "pubd", time.Now(), "till", "fid", "ttt"},
+	},
+	}
+
+	b, err := json.MarshalIndent(data, "", "    ")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(w, string(b))
+
 }
