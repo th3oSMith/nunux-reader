@@ -10,6 +10,8 @@ import (
 
 func main() {
 
+	initUsers()
+
 	log.Println("Lancement de Nunux-Reader")
 
 	// Définition des routes
