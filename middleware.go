@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/base64"
+	"github.com/th3osmith/nunux-reader/storage"
 	"github.com/zenazn/goji/web"
 	"net/http"
 	"strings"
 )
-
-// Création des utilisateurs
-var users map[string]string
 
 // Authentification basique
 func SuperSecure(c *web.C, h http.Handler) http.Handler {
@@ -40,16 +38,10 @@ func pleaseAuth(w http.ResponseWriter) {
 	w.Write([]byte("Go away!\n"))
 }
 
-func initUsers() {
-	users = make(map[string]string)
-	users["admin"] = "admin"
-	users["airremi"] = "abc"
-}
-
 func isUser(credentials string) bool {
 
-	for user, password := range users {
-		if credentials == user+":"+password {
+	for _, user := range storage.Users {
+		if credentials == user.Username+":"+user.Password {
 			return true
 		}
 	}

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/th3osmith/nunux-reader/storage"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"io"
@@ -9,11 +12,26 @@ import (
 	"net/http"
 )
 
+var db *sql.DB
+
 func main() {
 
-	initUsers()
-
 	log.Println("Lancement de Nunux-Reader")
+
+	// Ouverture de la connexion à la base SQL
+	log.Println("Ouverture de la connexion MySQL")
+	var err error
+	db, err = sql.Open("mysql", "admin:mypass@tcp(127.0.0.1:3306)/nunux")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	// Initialisation des modules
+	log.Println("---Initialisation des modules---")
+	storage.Init(db)
 
 	// Définition des routes
 
