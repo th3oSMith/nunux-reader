@@ -4,6 +4,7 @@ import (
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -35,7 +36,16 @@ func main() {
 }
 
 func Root(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Il n'y a rien à voir ici")
+
+	// Chargement de la page
+	body, err := ioutil.ReadFile("views/index.html")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(w, string(body))
+
 }
 
 func AdminRoot(w http.ResponseWriter, r *http.Request) {
