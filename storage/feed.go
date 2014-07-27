@@ -75,3 +75,31 @@ func LoadFeeds() (err error) {
 
 	return nil
 }
+
+func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
+
+	stmt, err := db.Prepare("INSERT INTO article(date, description, link, pubdate, title, feed_id) VALUES(NOW(), ?, ?, ?, ?, ?)")
+
+	if err != nil {
+		return err
+	}
+
+	for _, article := range articles {
+		res, err := stmt.Exec(article.Content, article.Link, article.Date, article.Title, feedId)
+		if err != nil {
+			return err
+		}
+		lastId, err := res.LastInsertId()
+
+		if err != nil {
+			return err
+		}
+		rowCnt, err := res.RowsAffected()
+
+		if err != nil {
+			return err
+		}
+		log.Printf("Insertion d'un Article ID = %d, affected = %d\n", lastId, rowCnt)
+	}
+	return nil
+}
