@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -116,5 +117,46 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, string(b))
+
+}
+
+type receiver struct {
+	Url string
+}
+
+func addSubscription(w http.ResponseWriter, r *http.Request) {
+
+	// Récpération de l'url envoyée dans le corps en json
+	var v receiver
+	json.NewDecoder(r.Body).Decode(&v)
+
+	feed, err := storage.CreateFeed(v.Url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, err := json.MarshalIndent(feed, "", "    ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(w, string(out))
+
+}
+
+func removeSubscription(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	id := c.URLParams["id"]
+
+	log.Println("Suppression du flux", id)
+
+	idInt, _ := strconv.Atoi(id)
+
+	err := storage.RemoveFeed(int64(idInt))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	storage.LoadFeeds()
 
 }

@@ -5,18 +5,15 @@ import (
 	"log"
 )
 
-var Feeds map[int64]*rss.Feed
+var Feeds []*rss.Feed
 
-func CreateFeed(url string) (err error) {
+func CreateFeed(url string) (feed *rss.Feed, err error) {
 
-	feed, err := rss.Fetch(url)
+	feed, err = rss.Fetch(url)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Ajout à la liste des flux chargés
-	Feeds[feed.Id] = feed
 
 	// Enregistrement des articles
 	// @TODO
@@ -25,35 +22,38 @@ func CreateFeed(url string) (err error) {
 	stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	lastId, err := res.LastInsertId()
 
+	// Assignation de l'id
+	feed.Id = lastId
+
+	// Ajout à la liste des flux chargés
+	Feeds = append(Feeds, feed)
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 	rowCnt, err := res.RowsAffected()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Printf("Insertion d'un Flux ID = %d, affected = %d\n", lastId, rowCnt)
 
-	return nil
-
-	return nil
+	return feed, nil
 
 }
 
 func LoadFeeds() (err error) {
 
-	// Initialization de la map
-	Feeds = make(map[int64]*rss.Feed)
+	Feeds = nil
 
 	log.Println("Chargement des flux")
 
@@ -69,7 +69,7 @@ func LoadFeeds() (err error) {
 		if err != nil {
 			return err
 		}
-		Feeds[feed.Id] = &feed
+		Feeds = append(Feeds, &feed)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -145,5 +145,37 @@ func CountFeedArticles(feedId int64) (count int, err error) {
 	}
 
 	return
+
+}
+
+func RemoveFeed(feedId int64) (err error) {
+
+	// Suppression des Articles
+	stmt, err := db.Prepare("DELETE FROM article WHERE feed_id = ?;")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(feedId)
+	if err != nil {
+		return err
+	}
+
+	// Suppression du flux
+	stmt, err = db.Prepare("DELETE FROM feed WHERE id = ?;")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(feedId)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Suppression du flux ID = %d", feedId)
+
+	return nil
 
 }
