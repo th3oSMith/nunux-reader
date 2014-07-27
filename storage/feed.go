@@ -76,6 +76,33 @@ func LoadFeeds() (err error) {
 	return nil
 }
 
+func GetFeedArticles(feedId int64) (articles []rss.Item, err error) {
+
+	var article rss.Item
+
+	log.Println("Chargement des article du Flux")
+
+	rows, err := db.Query("select id, date, description, link, pubdate, title from article where feed_id = ?", feedId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&article.Id, &article.Date, &article.Content, &article.Link, &article.PubDate, &article.Title)
+		if err != nil {
+			return nil, err
+		}
+		articles = append(articles, article)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
 func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 
 	stmt, err := db.Prepare("INSERT INTO article(date, description, link, pubdate, title, feed_id) VALUES(NOW(), ?, ?, ?, ?, ?)")
