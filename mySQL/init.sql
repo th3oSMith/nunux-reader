@@ -1,5 +1,8 @@
 -- Création des Tables
 
+/* Désactivation des contraintes */
+SET foreign_key_checks = 0;
+
 /* Table contenant les utilisateurs */
 DROP TABLE IF EXISTS user;
 CREATE TABLE user (
@@ -43,14 +46,19 @@ CREATE TABLE timeline (
                       title VARCHAR(255) NOT NULL,
                       size SMALLINT NOT NULL,
                       feed_id INT(4),
+                      user_id INT,
                       PRIMARY KEY (id),
-                      FOREIGN KEY (feed_id) REFERENCES feed(id)
+                      FOREIGN KEY (feed_id) REFERENCES feed(id),
+                      FOREIGN KEY (user_id) REFERENCES user(id)
                       ) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS user_timelines;
 CREATE TABLE user_timelines (
-                      user_id INT(4) NOT NULL,
+                      article_id INT(4) NOT NULL,
                       timeline_id INT(4) NOT NULL,
-                      FOREIGN KEY (user_id) REFERENCES user(id),
+                      FOREIGN KEY (article_id) REFERENCES article(id),
                       FOREIGN KEY (timeline_id) REFERENCES timeline(id)
                       ) ENGINE=INNODB;
+
+/* Réactivation des contraintes */
+SET foreign_key_checks = 1;
