@@ -21,7 +21,7 @@ func main() {
 	// Ouverture de la connexion à la base SQL
 	log.Println("Ouverture de la connexion MySQL")
 	var err error
-	db, err = sql.Open("mysql", "admin:mypass@tcp(127.0.0.1:3306)/nunux")
+	db, err = sql.Open("mysql", "admin:mypass@tcp(127.0.0.1:3306)/nunux?parseTime=1")
 
 	if err != nil {
 		log.Fatal(err)
@@ -33,10 +33,9 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 
-	err = storage.CreateFeed("http://sebsauvage.net/links/?do=rss")
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Println(storage.Feeds[0].GetNew())
+	log.Println("------------------------------")
+	log.Println(storage.Feeds[0].GetNew())
 
 	// Définition des routes
 

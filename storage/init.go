@@ -19,4 +19,10 @@ func Init(sqlDB *sql.DB) {
 	}
 	log.Println("Module Utilisateur chargé")
 
+	err = LoadFeeds()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Module Flux chargé")
+
 }
