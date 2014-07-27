@@ -98,12 +98,9 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
 
-	timeline, err := storage.GetTimeline(timelineName)
-	if err != nil {
-		log.Fatal(err)
-	}
+	timelineId, _ := strconv.Atoi(timelineName)
 
-	articles, err := storage.GetFeedArticles(timeline.Feed.Id)
+	articles, err := storage.GetTimelineArticles(int64(timelineId))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,11 +127,19 @@ func addSubscription(w http.ResponseWriter, r *http.Request) {
 	var v receiver
 	json.NewDecoder(r.Body).Decode(&v)
 
+	// Création du Flux
 	feed, err := storage.CreateFeed(v.Url)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Création de la Timeline
+	err = storage.CreateTimeline(feed.Title, feed)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Création de la sortie
 	out, err := json.MarshalIndent(feed, "", "    ")
 	if err != nil {
 		log.Fatal(err)

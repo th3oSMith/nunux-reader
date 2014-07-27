@@ -21,7 +21,7 @@ func GetTimeline(name string) (t Timeline, err error) {
 
 	log.Println("Récupération de la timeline")
 
-	err = db.QueryRow("select t.timeline, t.title, (SELECT COUNT(*) FROM article WHERE feed_id = t.feed_id) size, f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id where t.id = ?", name).Scan(&t.Timeline, &t.Title, &t.Size, &t.Feed.Id, &t.Feed.Nickname, &t.Feed.Title, &t.Feed.Description, &t.Feed.Link, &t.Feed.UpdateURL, &t.Feed.Refresh, &t.Feed.Unread)
+	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size, f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id where t.id = ?", name).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size, &t.Feed.Id, &t.Feed.Nickname, &t.Feed.Title, &t.Feed.Description, &t.Feed.Link, &t.Feed.UpdateURL, &t.Feed.Refresh, &t.Feed.Unread)
 
 	if err != nil && err != sql.ErrNoRows {
 		return Timeline{}, err
@@ -40,7 +40,7 @@ func LoadTimelines() (err error) {
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
-	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article WHERE feed_id = t.feed_id) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id")
+	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id")
 	if err != nil {
 		return err
 	}
@@ -60,5 +60,76 @@ func LoadTimelines() (err error) {
 	}
 
 	return nil
+
+}
+
+func CreateTimeline(title string, feed *rss.Feed) (err error) {
+
+	var timeline Timeline
+
+	timeline.Timeline = title
+	timeline.Title = title
+	timeline.Size = 0
+	timeline.Feed = *feed
+
+	// Enregistrement dans la base SQL
+	stmt, err := db.Prepare("INSERT INTO timeline(timeline, title, size, feed_id, user_id) VALUES(?, ?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+
+	log.Println("userId", CurrentUser.Id)
+
+	res, err := stmt.Exec(title, title, 0, feed.Id, CurrentUser.Id)
+	if err != nil {
+		return err
+	}
+	lastId, err := res.LastInsertId()
+
+	// Assignation de l'id
+	timeline.Id = lastId
+
+	// Ajout à la liste des flux chargés
+	Timelines = append(Timelines, timeline)
+
+	if err != nil {
+		return err
+	}
+	rowCnt, err := res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+	log.Printf("Insertion d'une Timeline ID = %d, affected = %d\n", lastId, rowCnt)
+
+	return nil
+
+}
+
+func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
+
+	var article rss.Item
+
+	log.Println("Chargement des articles de la Timeline", timelineId)
+
+	rows, err := db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ?", timelineId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&article.Id, &article.Date, &article.Content, &article.Link, &article.PubDate, &article.Title)
+		if err != nil {
+			return nil, err
+		}
+		articles = append(articles, article)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return articles, nil
 
 }

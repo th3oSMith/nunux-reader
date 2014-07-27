@@ -11,6 +11,7 @@ type User struct {
 }
 
 var Users []User
+var CurrentUser User
 
 func LoadUsers() (err error) {
 

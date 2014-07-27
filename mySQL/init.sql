@@ -52,8 +52,8 @@ CREATE TABLE timeline (
                       FOREIGN KEY (user_id) REFERENCES user(id)
                       ) ENGINE=INNODB;
 
-DROP TABLE IF EXISTS user_timelines;
-CREATE TABLE user_timelines (
+DROP TABLE IF EXISTS article_timelines;
+CREATE TABLE article_timelines (
                       article_id INT(4) NOT NULL,
                       timeline_id INT(4) NOT NULL,
                       FOREIGN KEY (article_id) REFERENCES article(id),

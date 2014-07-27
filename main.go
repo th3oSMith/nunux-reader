@@ -33,6 +33,18 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 
+	/*
+		articles, err := storage.Feeds[1].GetNew()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = storage.SaveArticles(articles, storage.Feeds[1].Id)
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
+
 	// Définition des routes
 
 	// Accueil du site
@@ -41,7 +53,7 @@ func main() {
 	// Page nécessitant une authentification
 	api := web.New()
 	goji.Handle("/api/*", api)
-	//api.Use(SuperSecure)
+	api.Use(SuperSecure)
 
 	api.Get("/api/subscription", SubscriptionPage)
 	api.Get("/api/timeline", TimelinePage)

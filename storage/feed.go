@@ -110,7 +110,31 @@ func GetFeedArticles(feedId int64) (articles []rss.Item, err error) {
 
 func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 
+	// Récupération des timelinse qui possèdent ce flux
+
+	var timelinesId []int64
+	var id int64
+
+	rows, err := db.Query("select id FROM timeline WHERE feed_id = ?", feedId)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&id)
+		if err != nil {
+			return err
+		}
+		timelinesId = append(timelinesId, id)
+	}
+	err = rows.Err()
+	if err != nil {
+		return err
+	}
+
 	stmt, err := db.Prepare("INSERT INTO article(date, description, link, pubdate, title, feed_id) VALUES(NOW(), ?, ?, ?, ?, ?)")
+	stmt2, err := db.Prepare("INSERT INTO article_timelines(article_id, timeline_id) VALUES(?, ?)")
 
 	if err != nil {
 		return err
@@ -122,7 +146,6 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 			return err
 		}
 		lastId, err := res.LastInsertId()
-
 		if err != nil {
 			return err
 		}
@@ -132,6 +155,19 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 			return err
 		}
 		log.Printf("Insertion d'un Article ID = %d, affected = %d\n", lastId, rowCnt)
+
+		// Insertion des articles dans les timelines
+		for _, timelineId := range timelinesId {
+
+			log.Println(lastId, timelineId)
+			_, err = stmt2.Exec(lastId, timelineId)
+			if err != nil {
+				return err
+			}
+			log.Println("Insertion d'une Référence")
+
+		}
+
 	}
 	return nil
 }

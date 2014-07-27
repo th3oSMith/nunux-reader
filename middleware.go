@@ -42,6 +42,7 @@ func isUser(credentials string) bool {
 
 	for _, user := range storage.Users {
 		if credentials == user.Username+":"+user.Password {
+			storage.CurrentUser = user
 			return true
 		}
 	}
