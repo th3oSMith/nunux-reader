@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-var Feeds []*rss.Feed
+var Feeds map[int64]*rss.Feed
 
 func CreateFeed(url string) (err error) {
 
@@ -16,7 +16,7 @@ func CreateFeed(url string) (err error) {
 	}
 
 	// Ajout à la liste des flux chargés
-	Feeds = append(Feeds, feed)
+	Feeds[feed.Id] = feed
 
 	// Enregistrement des articles
 	// @TODO
@@ -52,6 +52,9 @@ func CreateFeed(url string) (err error) {
 
 func LoadFeeds() (err error) {
 
+	// Initialization de la map
+	Feeds = make(map[int64]*rss.Feed)
+
 	log.Println("Chargement des flux")
 
 	rows, err := db.Query("select * from feed ")
@@ -66,12 +69,14 @@ func LoadFeeds() (err error) {
 		if err != nil {
 			return err
 		}
-		Feeds = append(Feeds, &feed)
+		Feeds[feed.Id] = &feed
 	}
 	err = rows.Err()
 	if err != nil {
 		return err
 	}
+
+	log.Println(Feeds)
 
 	return nil
 }
@@ -80,7 +85,7 @@ func GetFeedArticles(feedId int64) (articles []rss.Item, err error) {
 
 	var article rss.Item
 
-	log.Println("Chargement des article du Flux")
+	log.Println("Chargement des articles du Flux", feedId)
 
 	rows, err := db.Query("select id, date, description, link, pubdate, title from article where feed_id = ?", feedId)
 	if err != nil {
@@ -129,4 +134,16 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 		log.Printf("Insertion d'un Article ID = %d, affected = %d\n", lastId, rowCnt)
 	}
 	return nil
+}
+
+func CountFeedArticles(feedId int64) (count int, err error) {
+
+	err = db.QueryRow("SELECT COUNT(*) FROM article WHERE feed_id = ?", feedId).Scan(&count)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return
+
 }

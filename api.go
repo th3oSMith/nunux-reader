@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/th3osmith/nunux-reader/storage"
+	"github.com/th3osmith/rss"
 	"github.com/zenazn/goji/web"
 	"io"
 	"log"
@@ -25,16 +26,9 @@ type Feed struct {
 	Id           string    `json:"id"`
 }
 
-type Timeline struct {
-	Timeline string `json:"timeline"`
-	Title    string `json:"title"`
-	Size     int    `json:"size"`
-	Feed     Feed   `json:"feed"`
-}
-
 type TimelineData struct {
-	Next     string    `json:"next"`
-	Articles []Article `json:"articles"`
+	Next     string     `json:"next"`
+	Articles []rss.Item `json:"articles"`
 }
 
 type Article struct {
@@ -67,10 +61,7 @@ func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 
 func TimelinePage(w http.ResponseWriter, r *http.Request) {
 
-	timelines := []Timeline{
-		{"global", "Titre", 23, Feed{}},
-		{"archive", "Saved Items", 42, Feed{}},
-	}
+	timelines := storage.Timelines
 
 	b, err := json.MarshalIndent(timelines, "", "    ")
 
@@ -87,7 +78,10 @@ func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
 
-	timeline := Timeline{"global", "Titre", 23, Feed{}}
+	timeline, err := storage.GetTimeline(timelineName)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	b, err := json.MarshalIndent(timeline, "", "    ")
 
@@ -103,11 +97,17 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
 
-	data := TimelineData{"next?", []Article{
-		{"auithor", time.Now(), "desc", "guid", "id", "orig", "pubd", time.Now(), "till", "fid", "ttt"},
-		{"auithora", time.Now(), "desc", "guid", "id", "orig", "pubd", time.Now(), "till", "fid", "ttt"},
-	},
+	timeline, err := storage.GetTimeline(timelineName)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	articles, err := storage.GetFeedArticles(timeline.Feed.Id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data := TimelineData{"next?", articles}
 
 	b, err := json.MarshalIndent(data, "", "    ")
 

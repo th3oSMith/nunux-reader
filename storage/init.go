@@ -25,4 +25,10 @@ func Init(sqlDB *sql.DB) {
 	}
 	log.Println("Module Flux chargé")
 
+	err = LoadTimelines()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Module Timelines chargé")
+
 }
