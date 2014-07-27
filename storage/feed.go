@@ -54,8 +54,6 @@ func LoadFeeds() (err error) {
 
 	log.Println("Chargement des flux")
 
-	var feed rss.Feed
-
 	rows, err := db.Query("select * from feed ")
 	if err != nil {
 		return err
@@ -63,12 +61,12 @@ func LoadFeeds() (err error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var feed rss.Feed
 		err := rows.Scan(&feed.Id, &feed.Nickname, &feed.Title, &feed.Description, &feed.Link, &feed.UpdateURL, &feed.Refresh, &feed.Unread)
 		if err != nil {
 			return err
 		}
 		Feeds = append(Feeds, &feed)
-		log.Println(feed)
 	}
 	err = rows.Err()
 	if err != nil {

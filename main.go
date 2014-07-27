@@ -33,10 +33,6 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 
-	log.Println(storage.Feeds[0].GetNew())
-	log.Println("------------------------------")
-	log.Println(storage.Feeds[0].GetNew())
-
 	// Définition des routes
 
 	// Accueil du site

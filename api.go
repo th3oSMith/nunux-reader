@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/th3osmith/nunux-reader/storage"
 	"github.com/zenazn/goji/web"
 	"io"
 	"log"
@@ -52,10 +53,7 @@ type Article struct {
 
 func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 
-	subs := []Feed{
-		{"Titre", "wml", "status", time.Now(), time.Now(), "etag", time.Now(), 0, "descr", "link", "hub", "iddd"},
-		{"Titre2", "wml", "status", time.Now(), time.Now(), "etag", time.Now(), 0, "descr", "link", "hub", "iddd"},
-	}
+	subs := storage.Feeds
 
 	b, err := json.MarshalIndent(subs, "", "    ")
 
