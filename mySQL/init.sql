@@ -12,17 +12,13 @@ CREATE TABLE user (
 DROP TABLE IF EXISTS feed;
 CREATE TABLE feed (
                       id INT NOT NULL AUTO_INCREMENT,
+                      nickname VARCHAR(255) NOT NULL,
                       title VARCHAR(255) NOT NULL,
-                      xmlurl VARCHAR(255) NOT NULL,
-                      status VARCHAR(50) NOT NULL,
-                      lastModified DATETIME NOT NULL,
-                      expires DATETIME NOT NULL,
-                      etag VARCHAR(255) NOT NULL,
-                      updateTime DATETIME NOT NULL,
-                      errCount SMALLINT NOT NULL,
                       description TEXT NOT NULL,
                       link VARCHAR(255) NOT NULL,
-                      hub VARCHAR(255) NOT NULL,
+                      updateUrl VARCHAR(255) NOT NULL,
+                      refresh DATETIME NOT NULL,
+                      unread INT NOT NULL,
                       PRIMARY KEY (id)
                       ) ENGINE=INNODB;
 

@@ -33,6 +33,11 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 
+	err = storage.CreateFeed("http://sebsauvage.net/links/?do=rss")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Définition des routes
 
 	// Accueil du site

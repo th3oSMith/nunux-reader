@@ -11,7 +11,7 @@ import (
 
 type Feed struct {
 	Title        string    `json:"title"`
-	Xmlurl       string    `json:"xmlurl"`
+	UpdateUrl    string    `json:"xmlurl"`
 	Status       string    `json:"status"`
 	LastModified time.Time `json:"lastModified"`
 	Expires      time.Time `json:"expires"`
