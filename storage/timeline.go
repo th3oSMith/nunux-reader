@@ -37,6 +37,7 @@ func GetTimeline(name string) (t Timeline, err error) {
 
 func LoadTimelines() (err error) {
 
+	Timelines = nil
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
@@ -131,5 +132,69 @@ func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
 	}
 
 	return articles, nil
+
+}
+
+func GetGlobalArticles() (articles []rss.Item, err error) {
+
+	var article rss.Item
+
+	log.Println("Chargement des articles de la Timeline Gloable")
+
+	// Création de la requête SQL
+	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
+	var args []interface{}
+
+	for _, timeline := range Timelines {
+		sql += "at.timeline_id = ? OR "
+		args = append(args, timeline.Id)
+	}
+
+	sql = sql[:len(sql)-3]
+
+	rows, err := db.Query(sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&article.Id, &article.Date, &article.Content, &article.Link, &article.PubDate, &article.Title)
+		if err != nil {
+			return nil, err
+		}
+		articles = append(articles, article)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+
+}
+
+func GetGlobalArticlesSize() (size int, err error) {
+
+	log.Println("Chargement des articles de la Timeline Gloable")
+
+	// Création de la requête SQL
+	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
+	var args []interface{}
+
+	for _, timeline := range Timelines {
+		sql += "at.timeline_id = ? OR "
+		args = append(args, timeline.Id)
+	}
+
+	sql = sql[:len(sql)-3]
+
+	err = db.QueryRow(sql, args...).Scan(&size)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return
 
 }

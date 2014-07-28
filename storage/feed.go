@@ -169,6 +169,10 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 		}
 
 	}
+
+	// On met à jour les timelines en mémoire
+	LoadTimelines()
+
 	return nil
 }
 

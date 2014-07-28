@@ -34,17 +34,16 @@ func main() {
 	storage.Init(db)
 
 	/*
-		articles, err := storage.Feeds[1].GetNew()
+		articles, err := storage.Feeds[2].GetNew()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = storage.SaveArticles(articles, storage.Feeds[1].Id)
+		err = storage.SaveArticles(articles, storage.Feeds[2].Id)
 		if err != nil {
 			log.Fatal(err)
 		}
 	*/
-
 	// Définition des routes
 
 	// Accueil du site

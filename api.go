@@ -62,7 +62,19 @@ func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 
 func TimelinePage(w http.ResponseWriter, r *http.Request) {
 
-	timelines := storage.Timelines
+	var timelines []storage.Timeline
+
+	// On ajoute les timelines spéciales
+	size, err := storage.GetGlobalArticlesSize()
+	if err != nil {
+		log.Fatal(err)
+	}
+	global := storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
+
+	timelines = append(timelines, global)
+
+	// On traite les autres
+	timelines = append(timelines, storage.Timelines...)
 
 	b, err := json.MarshalIndent(timelines, "", "    ")
 
@@ -79,7 +91,23 @@ func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
 
-	timeline, err := storage.GetTimeline(timelineName)
+	var err error
+	var timeline storage.Timeline
+
+	// Traitement des cas particuliers
+	if timelineName == "global" {
+
+		size, err := storage.GetGlobalArticlesSize()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		timeline = storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
+
+	} else {
+		timeline, err = storage.GetTimeline(timelineName)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,13 +126,25 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
 
-	timelineId, _ := strconv.Atoi(timelineName)
+	var articles []rss.Item
+	var err error
 
-	articles, err := storage.GetTimelineArticles(int64(timelineId))
-	if err != nil {
-		log.Fatal(err)
+	// Gestion des cas particuliers
+	if timelineName == "global" {
+		articles, err = storage.GetGlobalArticles()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	} else {
+
+		timelineId, _ := strconv.Atoi(timelineName)
+
+		articles, err = storage.GetTimelineArticles(int64(timelineId))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-
 	data := TimelineData{"next?", articles}
 
 	b, err := json.MarshalIndent(data, "", "    ")
