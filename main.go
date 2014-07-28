@@ -63,6 +63,8 @@ func main() {
 	api.Post("/api/subscription", addSubscription)
 	api.Delete("/api/subscription/:id", removeSubscription)
 
+	api.Delete("/api/timeline/:timeline/:id", removeArticle)
+
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes
 	goji.Get("/*", http.FileServer(http.Dir("public")))
@@ -72,6 +74,10 @@ func main() {
 }
 
 func Root(w http.ResponseWriter, r *http.Request) {
+
+	// Rechargement des flux et des timelines
+	storage.LoadFeeds()
+	storage.LoadTimelines()
 
 	// Chargement de la page
 	body, err := ioutil.ReadFile("views/index.html")

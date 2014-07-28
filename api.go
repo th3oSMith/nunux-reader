@@ -48,7 +48,11 @@ type Article struct {
 
 func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 
-	subs := storage.Feeds
+	var subs []*rss.Feed
+
+	for _, f := range storage.Feeds {
+		subs = append(subs, f)
+	}
 
 	b, err := json.MarshalIndent(subs, "", "    ")
 
@@ -74,7 +78,9 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 	timelines = append(timelines, global)
 
 	// On traite les autres
-	timelines = append(timelines, storage.Timelines...)
+	for _, t := range storage.Timelines {
+		timelines = append(timelines, t)
+	}
 
 	b, err := json.MarshalIndent(timelines, "", "    ")
 
@@ -90,6 +96,13 @@ func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	timelineName := c.URLParams["name"]
 	log.Println(timelineName)
+
+	b := getTimelineStatus(timelineName)
+
+	io.WriteString(w, b)
+}
+
+func getTimelineStatus(timelineName string) (status string) {
 
 	var err error
 	var timeline storage.Timeline
@@ -118,7 +131,8 @@ func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	io.WriteString(w, string(b))
+	return string(b)
+
 }
 
 func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
@@ -203,5 +217,23 @@ func removeSubscription(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 
 	storage.LoadFeeds()
+
+}
+
+func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	id := c.URLParams["id"]
+	timeline := c.URLParams["timeline"]
+	log.Println("Suppression de l'article ", id)
+	idInt, _ := strconv.Atoi(id)
+
+	err := storage.RemoveArticle(int64(idInt), timeline)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b := getTimelineStatus(timeline)
+
+	io.WriteString(w, b)
 
 }

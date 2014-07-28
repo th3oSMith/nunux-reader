@@ -3,9 +3,10 @@ package storage
 import (
 	"github.com/th3osmith/rss"
 	"log"
+	"strconv"
 )
 
-var Feeds []*rss.Feed
+var Feeds map[int64]*rss.Feed
 
 func CreateFeed(url string) (feed *rss.Feed, err error) {
 
@@ -35,7 +36,7 @@ func CreateFeed(url string) (feed *rss.Feed, err error) {
 	feed.Id = lastId
 
 	// Ajout à la liste des flux chargés
-	Feeds = append(Feeds, feed)
+	Feeds[feed.Id] = feed
 
 	if err != nil {
 		return nil, err
@@ -53,7 +54,7 @@ func CreateFeed(url string) (feed *rss.Feed, err error) {
 
 func LoadFeeds() (err error) {
 
-	Feeds = nil
+	Feeds = make(map[int64]*rss.Feed)
 
 	log.Println("Chargement des flux")
 
@@ -69,7 +70,7 @@ func LoadFeeds() (err error) {
 		if err != nil {
 			return err
 		}
-		Feeds = append(Feeds, &feed)
+		Feeds[feed.Id] = &feed
 	}
 	err = rows.Err()
 	if err != nil {
@@ -215,6 +216,44 @@ func RemoveFeed(feedId int64) (err error) {
 	}
 
 	log.Printf("Suppression du flux ID = %d", feedId)
+
+	return nil
+
+}
+
+func RemoveArticle(id int64, timelineName string) (err error) {
+
+	sql := "DELETE FROM article_timelines WHERE article_id = ? AND ("
+	var args []interface{}
+
+	args = append(args, id)
+
+	if timelineName == "global" {
+		for _, timeline := range Timelines {
+			sql += "timeline_id = ? OR "
+			args = append(args, timeline.Id)
+		}
+		sql = sql[:len(sql)-3] + ")"
+
+	} else {
+		tmp, _ := strconv.Atoi(timelineName)
+		timeId := int64(tmp)
+		sql += "timeline_id = ?) "
+		args = append(args, timeId)
+
+	}
+
+	stmt, err := db.Prepare(sql)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Suppression de l'article ID = %d", id)
 
 	return nil
 

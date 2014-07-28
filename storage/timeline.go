@@ -15,7 +15,7 @@ type Timeline struct {
 	Id       int64    `json:"id"`
 }
 
-var Timelines []Timeline
+var Timelines map[int64]Timeline
 
 func GetTimeline(name string) (t Timeline, err error) {
 
@@ -37,7 +37,7 @@ func GetTimeline(name string) (t Timeline, err error) {
 
 func LoadTimelines() (err error) {
 
-	Timelines = nil
+	Timelines = make(map[int64]Timeline)
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
@@ -53,7 +53,7 @@ func LoadTimelines() (err error) {
 		if err != nil {
 			return err
 		}
-		Timelines = append(Timelines, t)
+		Timelines[t.Id] = t
 	}
 	err = rows.Err()
 	if err != nil {
@@ -91,7 +91,7 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 	timeline.Id = lastId
 
 	// Ajout à la liste des flux chargés
-	Timelines = append(Timelines, timeline)
+	Timelines[timeline.Id] = timeline
 
 	if err != nil {
 		return err
