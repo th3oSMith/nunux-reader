@@ -47,6 +47,9 @@ func main() {
 				log.Fatal(err)
 			}
 	*/
+
+	Update()
+
 	// Définition des routes
 
 	// Accueil du site
