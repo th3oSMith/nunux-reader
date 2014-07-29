@@ -33,16 +33,20 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 
-	articles, err := storage.Feeds[13].GetNew()
-	if err != nil {
-		log.Fatal(err)
-	}
+	/*
+		articles, err := storage.Feeds[13].GetNew()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	err = storage.SaveArticles(articles, storage.Feeds[13].Id)
-	if err != nil {
-		log.Fatal(err)
-	}
+		log.Println(articles)
 
+		/*
+			err = storage.SaveArticles(articles, storage.Feeds[13].Id)
+			if err != nil {
+				log.Fatal(err)
+			}
+	*/
 	// Définition des routes
 
 	// Accueil du site

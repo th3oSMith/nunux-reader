@@ -2,7 +2,10 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/json"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/th3osmith/rss"
+	"io/ioutil"
 	"log"
 )
 
@@ -31,4 +34,36 @@ func Init(sqlDB *sql.DB) {
 	}
 	log.Println("Module Timelines chargé")
 
+	known, err := RecoverKnown()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rss.Restore(known)
+
+}
+
+func RecoverKnown() (known map[string]struct{}, err error) {
+
+	jsonData, err := ioutil.ReadFile("known.db")
+	if err != nil {
+		return
+	}
+
+	json.Unmarshal(jsonData, &known)
+
+	return
+
+}
+
+func SaveKnown(known map[string]struct{}) (err error) {
+
+	data, err := json.Marshal(known)
+	if err != nil {
+		return
+	}
+
+	ioutil.WriteFile("known.db", data, 0600)
+
+	return
 }
