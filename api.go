@@ -159,7 +159,13 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}
+
 	data := TimelineData{"next?", articles}
+
+	if len(articles) == 0 {
+		data.Articles = []rss.Item{}
+		data.Next = ""
+	}
 
 	b, err := json.MarshalIndent(data, "", "    ")
 
