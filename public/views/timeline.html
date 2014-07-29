@@ -117,7 +117,7 @@
             <span class="glyphicon glyphicon-globe"></span>
             <a href="#timeline/{{ article.fid }}" title="Go to timeline">{{ article.meta.title }}</a>
             <span class="glyphicon glyphicon-time"></span>
-            <time title="{{article.date | date}}">{{ article.date | fromNow }}</time>
+            <time title="{{article.pubdate | date}}">{{ article.pubdate | fromNow }}</time>
           </span>
         </header>
         <div class="content {{article.fake && 'ending'}}">

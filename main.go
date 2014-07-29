@@ -32,14 +32,13 @@ func main() {
 	// Initialisation des modules
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
-
 	/*
-		articles, err := storage.Feeds[2].GetNew()
+		articles, err := storage.Feeds[13].GetNew()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = storage.SaveArticles(articles, storage.Feeds[2].Id)
+		err = storage.SaveArticles(articles, storage.Feeds[13].Id)
 		if err != nil {
 			log.Fatal(err)
 		}

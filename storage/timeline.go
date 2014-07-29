@@ -15,7 +15,7 @@ type Timeline struct {
 	Id       int64    `json:"id"`
 }
 
-var Timelines map[int64]Timeline
+var Timelines map[int64]*Timeline
 
 func GetTimeline(name string) (t Timeline, err error) {
 
@@ -37,7 +37,7 @@ func GetTimeline(name string) (t Timeline, err error) {
 
 func LoadTimelines() (err error) {
 
-	Timelines = make(map[int64]Timeline)
+	Timelines = make(map[int64]*Timeline)
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
@@ -53,7 +53,7 @@ func LoadTimelines() (err error) {
 		if err != nil {
 			return err
 		}
-		Timelines[t.Id] = t
+		Timelines[t.Id] = &t
 	}
 	err = rows.Err()
 	if err != nil {
@@ -91,7 +91,7 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 	timeline.Id = lastId
 
 	// Ajout à la liste des flux chargés
-	Timelines[timeline.Id] = timeline
+	Timelines[timeline.Id] = &timeline
 
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
 
 	log.Println("Chargement des articles de la Timeline", timelineId)
 
-	rows, err := db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ?", timelineId)
+	rows, err := db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? ORDER BY a.pubdate ASC", timelineId)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +151,10 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 	}
 
 	sql = sql[:len(sql)-3]
+
+	sql += " ORDER BY a.pubdate ASC"
+
+	log.Println(sql)
 
 	rows, err := db.Query(sql, args...)
 	if err != nil {

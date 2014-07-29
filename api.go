@@ -79,7 +79,7 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 
 	// On traite les autres
 	for _, t := range storage.Timelines {
-		timelines = append(timelines, t)
+		timelines = append(timelines, *t)
 	}
 
 	b, err := json.MarshalIndent(timelines, "", "    ")
