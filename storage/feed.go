@@ -277,7 +277,7 @@ func RemoveTimelineArticles(timelineName string) (err error) {
 		timeId := int64(tmp)
 		sql += "timeline_id = ?) "
 		args = append(args, timeId)
-		Timelines[timeId].Size--
+		Timelines[timeId].Size = 0
 
 	}
 

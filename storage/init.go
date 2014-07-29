@@ -7,6 +7,7 @@ import (
 	"github.com/th3osmith/rss"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 var db *sql.DB
@@ -39,15 +40,22 @@ func Init(sqlDB *sql.DB) {
 		log.Fatal(err)
 	}
 
-	rss.Restore(known)
+	if len(known) > 0 {
+		rss.Restore(known)
+	}
 
 }
 
 func RecoverKnown() (known map[string]struct{}, err error) {
 
+	if _, err := os.Stat("known.db"); err != nil {
+		log.Println("Pas de fichier db trouvé")
+		return known, nil
+	}
+
 	jsonData, err := ioutil.ReadFile("known.db")
 	if err != nil {
-		return
+		return known, err
 	}
 
 	json.Unmarshal(jsonData, &known)

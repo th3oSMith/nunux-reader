@@ -32,7 +32,7 @@ func main() {
 	// Initialisation des modules
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
-
+	InitUpdater()
 	/*
 		articles, err := storage.Feeds[13].GetNew()
 		if err != nil {
@@ -47,8 +47,6 @@ func main() {
 				log.Fatal(err)
 			}
 	*/
-
-	Update()
 
 	// Définition des routes
 
