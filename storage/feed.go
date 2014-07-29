@@ -259,3 +259,38 @@ func RemoveArticle(id int64, timelineName string) (err error) {
 	return nil
 
 }
+
+func RemoveTimelineArticles(timelineName string) (err error) {
+
+	sql := "DELETE FROM article_timelines WHERE ("
+	var args []interface{}
+
+	if timelineName == "global" {
+		for _, timeline := range Timelines {
+			sql += "timeline_id = ? OR "
+			args = append(args, timeline.Id)
+		}
+		sql = sql[:len(sql)-3] + ")"
+
+	} else {
+		tmp, _ := strconv.Atoi(timelineName)
+		timeId := int64(tmp)
+		sql += "timeline_id = ?) "
+		args = append(args, timeId)
+		Timelines[timeId].Size--
+
+	}
+
+	stmt, err := db.Prepare(sql)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

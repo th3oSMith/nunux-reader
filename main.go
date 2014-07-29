@@ -32,17 +32,17 @@ func main() {
 	// Initialisation des modules
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
-	/*
-		articles, err := storage.Feeds[13].GetNew()
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		err = storage.SaveArticles(articles, storage.Feeds[13].Id)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
+	articles, err := storage.Feeds[13].GetNew()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = storage.SaveArticles(articles, storage.Feeds[13].Id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Définition des routes
 
 	// Accueil du site
@@ -63,6 +63,7 @@ func main() {
 	api.Delete("/api/subscription/:id", removeSubscription)
 
 	api.Delete("/api/timeline/:timeline/:id", removeArticle)
+	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
 
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes

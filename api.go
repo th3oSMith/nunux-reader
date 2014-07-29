@@ -243,3 +243,19 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, b)
 
 }
+
+func removeTimelineArticles(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	timeline := c.URLParams["timeline"]
+	log.Println("Suppression des articles de la timeline ", timeline)
+
+	err := storage.RemoveTimelineArticles(timeline)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b := getTimelineStatus(timeline)
+
+	io.WriteString(w, b)
+
+}
