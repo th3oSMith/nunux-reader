@@ -37,6 +37,7 @@ func CreateFeed(url string) (feed *rss.Feed, err error) {
 
 	// Ajout à la liste des flux chargés
 	Feeds[feed.Id] = feed
+	Feeds[feed.Id].Items = []*rss.Item{}
 
 	if err != nil {
 		return nil, err
