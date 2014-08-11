@@ -213,11 +213,11 @@ func removeSubscription(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	id := c.URLParams["id"]
 
-	log.Println("Suppression du flux", id)
+	log.Println("Suppression de la timeline", id)
 
 	idInt, _ := strconv.Atoi(id)
 
-	err := storage.RemoveFeed(int64(idInt))
+	err := storage.RemoveTimeline(int64(idInt))
 	if err != nil {
 		log.Fatal(err)
 	}

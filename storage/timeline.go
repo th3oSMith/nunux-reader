@@ -149,14 +149,12 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
-	
+
 	if len(Timelines) > 0 {
 		sql = sql[:len(sql)-3]
-	}else {
+	} else {
 		sql = sql[:len(sql)-6]
 	}
-
-
 
 	sql += " ORDER BY a.pubdate ASC"
 
@@ -196,10 +194,10 @@ func GetGlobalArticlesSize() (size int, err error) {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
-	
+
 	if len(Timelines) > 0 {
 		sql = sql[:len(sql)-3]
-	}else {
+	} else {
 		sql = sql[:len(sql)-6]
 	}
 
@@ -210,5 +208,72 @@ func GetGlobalArticlesSize() (size int, err error) {
 	}
 
 	return
+
+}
+
+func RemoveTimeline(feedId int64) (err error) {
+
+	var timelineId int64
+
+	// Récupération de l'id de la timeleine
+	err = db.QueryRow("select id FROM timeline WHERE feed_id = ? AND user_id = ?", feedId, CurrentUser.Id).Scan(&timelineId)
+
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if err == sql.ErrNoRows {
+		return nil
+	}
+
+	// Suppression des articles de la timeline
+	stmt, err := db.Prepare("DELETE FROM article_timelines WHERE timeline_id = ?;")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(timelineId)
+	if err != nil {
+		return err
+	}
+
+	// Suppression de la timeline
+	stmt, err = db.Prepare("DELETE FROM timeline WHERE id = ?;")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(timelineId)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Suppression de la timeline ID = %d", feedId)
+
+	// On la supprime également de la mémoire
+	delete(Timelines, timelineId)
+
+	// On supprime le flux si jamais il n'est plus utilisé
+
+	var number int64
+
+	// Récupération du nombre de timelines l'utilisant
+	err = db.QueryRow("select COUNT(*) number FROM timeline WHERE feed_id = ?", feedId).Scan(&number)
+
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if err == sql.ErrNoRows {
+		return nil
+	}
+
+	if number == 0 {
+		RemoveFeed(feedId)
+	}
+
+	return nil
 
 }
