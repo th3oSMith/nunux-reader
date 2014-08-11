@@ -139,7 +139,7 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 
 	var article rss.Item
 
-	log.Println("Chargement des articles de la Timeline Gloable")
+	log.Println("Chargement des articles de la Timeline Globale")
 
 	// Création de la requête SQL
 	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
@@ -149,8 +149,14 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
+	
+	if len(Timelines) > 0 {
+		sql = sql[:len(sql)-3]
+	}else {
+		sql = sql[:len(sql)-6]
+	}
 
-	sql = sql[:len(sql)-3]
+
 
 	sql += " ORDER BY a.pubdate ASC"
 
@@ -180,7 +186,7 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 
 func GetGlobalArticlesSize() (size int, err error) {
 
-	log.Println("Chargement des articles de la Timeline Gloable")
+	log.Println("Chargement des articles de la Timeline Globable")
 
 	// Création de la requête SQL
 	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
@@ -190,8 +196,12 @@ func GetGlobalArticlesSize() (size int, err error) {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
-
-	sql = sql[:len(sql)-3]
+	
+	if len(Timelines) > 0 {
+		sql = sql[:len(sql)-3]
+	}else {
+		sql = sql[:len(sql)-6]
+	}
 
 	err = db.QueryRow(sql, args...).Scan(&size)
 

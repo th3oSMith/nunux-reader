@@ -26,6 +26,7 @@ func NewUpdater() *updater {
 
 func (u *updater) Run() {
 	ticker := time.NewTicker(10 * time.Minute)
+	Update()	
 
 	for {
 		select {
