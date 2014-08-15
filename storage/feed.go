@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"github.com/th3osmith/rss"
 	"log"
 	"strconv"
@@ -15,9 +16,6 @@ func CreateFeed(url string) (feed *rss.Feed, err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Enregistrement des articles
-	// @TODO
 
 	// Enregistrement dans la base SQL
 	stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread) VALUES(?, ?, ?, ?, ?, ?, ?)")
@@ -224,28 +222,28 @@ func RemoveFeed(feedId int64) (err error) {
 
 func RemoveArticle(id int64, timelineName string) (err error) {
 
-	sql := "DELETE FROM article_timelines WHERE article_id = ? AND ("
+	sqlQ := "DELETE FROM article_timelines WHERE article_id = ? AND ("
 	var args []interface{}
 
 	args = append(args, id)
 
 	if timelineName == "global" {
 		for _, timeline := range Timelines {
-			sql += "timeline_id = ? OR "
+			sqlQ += "timeline_id = ? OR "
 			args = append(args, timeline.Id)
 		}
-		sql = sql[:len(sql)-3] + ")"
+		sqlQ = sqlQ[:len(sqlQ)-3] + ")"
 
 	} else {
 		tmp, _ := strconv.Atoi(timelineName)
 		timeId := int64(tmp)
-		sql += "timeline_id = ?) "
+		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
 		Timelines[timeId].Size--
 
 	}
 
-	stmt, err := db.Prepare(sql)
+	stmt, err := db.Prepare(sqlQ)
 	if err != nil {
 		return err
 	}
@@ -253,6 +251,32 @@ func RemoveArticle(id int64, timelineName string) (err error) {
 	_, err = stmt.Exec(args...)
 	if err != nil {
 		return err
+	}
+
+	var number int64
+
+	// Suppression de l'article si plus personne n'en a besoin
+	err = db.QueryRow("select COUNT(*) number FROM article_timelines WHERE article_id = ?", id).Scan(&number)
+
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if err == sql.ErrNoRows {
+		return nil
+	}
+
+	if number == 0 {
+		stmt, err = db.Prepare("DELETE FROM article WHERE id = ?;")
+
+		if err != nil {
+			return err
+		}
+
+		_, err = stmt.Exec(id)
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Printf("Suppression de l'article ID = %d", id)
