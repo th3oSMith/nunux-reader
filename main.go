@@ -70,6 +70,8 @@ func main() {
 	api.Delete("/api/timeline/:timeline/:id", removeArticle)
 	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
 
+	api.Put("/api/timeline/archive/:id", saveArticle)
+
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes
 	goji.Get("/*", http.FileServer(http.Dir("public")))
@@ -81,7 +83,7 @@ func main() {
 func Root(w http.ResponseWriter, r *http.Request) {
 
 	// Rechargement des flux et des timelines
-	storage.LoadFeeds()
+	//storage.LoadFeeds()
 	storage.LoadTimelines()
 
 	// Chargement de la page

@@ -8,6 +8,7 @@ angular.module('SidebarModule', [])
       $scope.timelines = data;
       $scope.globalSize = data[0].size;
       $scope.archiveSize = data[1].size;
+      console.log($scope.timelines)
     });
   };
 

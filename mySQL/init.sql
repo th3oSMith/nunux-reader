@@ -9,7 +9,9 @@ CREATE TABLE user (
                       id INT NOT NULL AUTO_INCREMENT,
                       username VARCHAR(50) NOT NULL,
                       password VARCHAR(50) NOT NULL,
-                      PRIMARY KEY ( id )
+                      saved_timeline_id INT(4) NOT NULL,
+                      PRIMARY KEY ( id ),
+                      FOREIGN KEY (saved_timeline_id) REFERENCES timeline(id)
                       ) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS feed;

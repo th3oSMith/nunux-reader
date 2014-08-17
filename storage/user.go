@@ -5,9 +5,10 @@ import (
 )
 
 type User struct {
-	Id       int64
-	Username string
-	Password string
+	Id              int64
+	Username        string
+	Password        string
+	SavedTimelineId int64
 }
 
 var Users []User
@@ -15,7 +16,7 @@ var CurrentUser User
 
 func LoadUsers() (err error) {
 
-	var id int64
+	var id, savedTimelineId int64
 	var username, password string
 
 	rows, err := db.Query("select * FROM user;")
@@ -25,12 +26,16 @@ func LoadUsers() (err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&id, &username, &password)
+		err := rows.Scan(&id, &username, &password, &savedTimelineId)
 		if err != nil {
 			return err
 		}
-		Users = append(Users, User{id, username, password})
+		Users = append(Users, User{id, username, password, savedTimelineId})
 	}
+
+	// DEBUG --> User fixé
+	CurrentUser = Users[0]
+
 	err = rows.Err()
 	if err != nil {
 		return err

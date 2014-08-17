@@ -108,6 +108,22 @@ func GetFeedArticles(feedId int64) (articles []rss.Item, err error) {
 	return articles, nil
 }
 
+func SaveArticle(id int64) (err error) {
+
+	// On enregistre l'article dans la timeline des sauvegardes de l'utilsateur
+	stmt2, err := db.Prepare("INSERT INTO article_timelines(article_id, timeline_id) VALUES(?, ?)")
+
+	timelineId := CurrentUser.SavedTimelineId
+	_, err = stmt2.Exec(id, timelineId)
+	if err != nil {
+		return err
+	}
+	log.Println("Sauvegarde d'un article")
+
+	return nil
+
+}
+
 func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 
 	// Récupération des timelinse qui possèdent ce flux
@@ -233,6 +249,13 @@ func RemoveArticle(id int64, timelineName string) (err error) {
 			args = append(args, timeline.Id)
 		}
 		sqlQ = sqlQ[:len(sqlQ)-3] + ")"
+
+	} else if timelineName == "archive" {
+
+		timeId := CurrentUser.SavedTimelineId
+		sqlQ += "timeline_id = ?) "
+		args = append(args, timeId)
+		Timelines[timeId].Size--
 
 	} else {
 		tmp, _ := strconv.Atoi(timelineName)

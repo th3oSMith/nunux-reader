@@ -25,8 +25,8 @@ func NewUpdater() *updater {
 }
 
 func (u *updater) Run() {
-	ticker := time.NewTicker(10 * time.Minute)
-	Update()	
+	ticker := time.NewTicker(1 * time.Minute)
+	Update()
 
 	for {
 		select {
@@ -47,6 +47,7 @@ func Update() (err error) {
 		log.Println("Mise à jour du Flux ", feed.Title)
 
 		articles, err := feed.GetNew()
+
 		if err != nil {
 			return err
 		}

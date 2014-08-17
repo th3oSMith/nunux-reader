@@ -16,8 +16,23 @@ type Timeline struct {
 }
 
 var Timelines map[int64]*Timeline
+var Archive *Timeline
 
 func GetTimeline(name string) (t Timeline, err error) {
+
+	if name == "archive" {
+		err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size FROM timeline t  WHERE t.id = ?", Archive.Id).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+
+		if err != nil && err != sql.ErrNoRows {
+			return Timeline{}, err
+		}
+
+		if err == sql.ErrNoRows {
+			return Timeline{}, nil
+		}
+		log.Println("Récupération du statut des archives")
+		return
+	}
 
 	log.Println("Récupération de la timeline")
 
@@ -41,7 +56,7 @@ func LoadTimelines() (err error) {
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
-	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id")
+	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id WHERE t.user_id IS NOT NULL")
 	if err != nil {
 		return err
 	}
@@ -59,6 +74,18 @@ func LoadTimelines() (err error) {
 	if err != nil {
 		return err
 	}
+
+	var t Timeline
+	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size FROM timeline t WHERE t.id = ?", CurrentUser.SavedTimelineId).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+
+	if err != nil {
+		return err
+	}
+
+	Archive = &t
+
+	log.Println("Timelines chargées")
+	log.Println(Timelines)
 
 	return nil
 

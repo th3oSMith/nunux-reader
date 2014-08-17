@@ -61,6 +61,7 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 	global := storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
 
 	timelines = append(timelines, global)
+	timelines = append(timelines, *storage.Archive)
 
 	// On traite les autres
 	for _, t := range storage.Timelines {
@@ -131,6 +132,12 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	// Gestion des cas particuliers
 	if timelineName == "global" {
 		articles, err = storage.GetGlobalArticles()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if timelineName == "archive" {
+		timelineId := storage.CurrentUser.SavedTimelineId
+		articles, err = storage.GetTimelineArticles(int64(timelineId))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -224,6 +231,23 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 
 	b := getTimelineStatus(timeline)
+
+	io.WriteString(w, b)
+
+}
+
+func saveArticle(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	id := c.URLParams["id"]
+	log.Println("Sauvegarde de l'article ", id)
+	idInt, _ := strconv.Atoi(id)
+
+	err := storage.SaveArticle(int64(idInt))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b := getTimelineStatus("archive")
 
 	io.WriteString(w, b)
 
