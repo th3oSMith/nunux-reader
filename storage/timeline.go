@@ -151,6 +151,7 @@ func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
 		if err != nil {
 			return nil, err
 		}
+		article.Feed = Timelines[timelineId].Title
 		articles = append(articles, article)
 	}
 	err = rows.Err()
@@ -169,7 +170,7 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 	log.Println("Chargement des articles de la Timeline Globale")
 
 	// Création de la requête SQL
-	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
+	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
 	var args []interface{}
 
 	for _, timeline := range Timelines {
@@ -193,11 +194,14 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 	}
 	defer rows.Close()
 
+	var articleFeedId int64
+
 	for rows.Next() {
-		err := rows.Scan(&article.Id, &article.Date, &article.Content, &article.Link, &article.PubDate, &article.Title)
+		err := rows.Scan(&article.Id, &article.Date, &article.Content, &article.Link, &article.PubDate, &article.Title, &articleFeedId)
 		if err != nil {
 			return nil, err
 		}
+		article.Feed = Feeds[articleFeedId].Title
 		articles = append(articles, article)
 	}
 	err = rows.Err()
