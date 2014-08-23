@@ -16,7 +16,7 @@ type Timeline struct {
 }
 
 var Timelines map[int64]*Timeline
-var Archive *Timeline
+var Archive Timeline
 
 func GetTimeline(name string) (t Timeline, err error) {
 
@@ -82,7 +82,7 @@ func LoadTimelines() (err error) {
 		return err
 	}
 
-	Archive = &t
+	Archive = t
 
 	log.Println("Timelines chargées")
 	log.Println(Timelines)

@@ -119,6 +119,7 @@ func SaveArticle(id int64) (err error) {
 		return err
 	}
 	log.Println("Sauvegarde d'un article")
+	Archive.Size++
 
 	return nil
 
@@ -255,7 +256,7 @@ func RemoveArticle(id int64, timelineName string) (err error) {
 		timeId := CurrentUser.SavedTimelineId
 		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
-		Timelines[timeId].Size--
+		Archive.Size--
 
 	} else {
 		tmp, _ := strconv.Atoi(timelineName)

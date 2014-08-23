@@ -61,7 +61,7 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 	global := storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
 
 	timelines = append(timelines, global)
-	timelines = append(timelines, *storage.Archive)
+	timelines = append(timelines, storage.Archive)
 
 	// On traite les autres
 	for _, t := range storage.Timelines {
