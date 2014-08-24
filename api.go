@@ -6,6 +6,7 @@ import (
 	"github.com/th3osmith/rss"
 	"github.com/zenazn/goji/web"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,6 +30,10 @@ type Article struct {
 	Summary     string    `json:"summary"`
 	Title       string    `json:"title"`
 	Fid         string    `json:"fid"`
+}
+
+type OPMLError struct {
+	ErrorMsg string `json:"error"`
 }
 
 func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
@@ -193,6 +198,52 @@ func addSubscription(w http.ResponseWriter, r *http.Request) {
 
 	// Création de la sortie
 	out, err := json.MarshalIndent(feed, "", "    ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(w, string(out))
+
+}
+
+func addOPML(w http.ResponseWriter, r *http.Request) {
+
+	file, _, err := r.FormFile("opml")
+	if err != nil {
+		uploadError(w, err)
+		return
+	}
+
+	opml, err := ioutil.ReadAll(file)
+	if err != nil {
+		uploadError(w, err)
+		return
+	}
+
+	feeds, err := storage.AddOPML(opml)
+	if err != nil {
+		uploadError(w, err)
+		return
+	}
+
+	// Création de la sortie
+	out, err := json.MarshalIndent(feeds, "", "    ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Tttttt")
+
+	io.WriteString(w, string(out))
+
+}
+
+func uploadError(w http.ResponseWriter, errorMsg error) {
+
+	output := OPMLError{ErrorMsg: errorMsg.Error()}
+	out, err := json.MarshalIndent(output, "", "    ")
+
+	log.Println("Error", err)
+
 	if err != nil {
 		log.Fatal(err)
 	}

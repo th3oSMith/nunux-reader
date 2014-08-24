@@ -89,12 +89,10 @@ angular.module('ManageModule', ['ngUpload'])
   };
 
   $scope.uploadComplete = function (content, completed) {
-    if (completed && content.length > 0) {
+    if (completed) {
       var res = {};
-      // TODO not very clean
-      if (typeof content === 'string') {
-        res.error = content.match(/<p>(.+)<\/p>/);
-        res.error = res.error ? res.error[1] : 'Unknown';
+      if (content.error) {
+        res.error = content.error;
       }
       if (res.error) {
         $scope.message = {clazz: 'alert-danger', text: 'Unable to import file: ' + res.error};
