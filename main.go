@@ -65,6 +65,7 @@ func main() {
 	api.Get("/api/timeline/:name", getTimeline)
 
 	api.Post("/api/subscription", addSubscription)
+	api.Get("/api/subscription/export", exportOPML)
 	api.Post("/api/subscriptionOPML", addOPML)
 	api.Delete("/api/subscription/:id", removeSubscription)
 

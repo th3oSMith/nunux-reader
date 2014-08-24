@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/th3osmith/nunux-reader/storage"
 	"github.com/th3osmith/rss"
 	"github.com/zenazn/goji/web"
@@ -235,6 +236,22 @@ func addOPML(w http.ResponseWriter, r *http.Request) {
 
 	io.WriteString(w, string(out))
 
+}
+
+func exportOPML(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Disposition", "attachment; filename=nunux.opml")
+	w.Header().Set("Content-Type", "text/x-opml+xml")
+
+	opml := storage.ExportOPML()
+
+	out, err := xml.MarshalIndent(opml, "", "    ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`)
+	io.WriteString(w, string(out))
 }
 
 func uploadError(w http.ResponseWriter, errorMsg error) {

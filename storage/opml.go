@@ -36,6 +36,24 @@ func AddOPML(opml []byte) (feeds []rss.Feed, err error) {
 	return
 }
 
+func ExportOPML() (opml *Opml) {
+
+	var outlines []Outline
+
+	for _, timeline := range Timelines {
+		outlines = append(outlines, Outline{Type: "rss", Text: timeline.Timeline, Title: timeline.Timeline, Description: timeline.Feed.Description, XmlUrl: timeline.Feed.UpdateURL})
+	}
+
+	outline := Outline{Outline: outlines}
+
+	head := Head{Title: "Nunux Export"}
+	body := Body{Outline: outline}
+
+	opml = &Opml{Version: "1.0", Head: head, Body: body}
+
+	return opml
+}
+
 type Opml struct {
 	Head    Head   `xml:"head"`
 	Body    Body   `xml:"body"`
