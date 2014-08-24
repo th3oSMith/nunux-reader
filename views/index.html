@@ -62,7 +62,7 @@
           title="{{ timeline.feed.title }}"
           class="list-group-item"
           target="_self"
-          ng-repeat="timeline in timelines | filter:isSubscription | orderBy:order"
+          ng-repeat="timeline in timelines | filter:isSubscription | orderBy:[order, 'timeline']"
           ng-class="{active: $root.currentPage == timeline.feed.id}">
           <span class="badge" ng-show="timeline.size">{{ timeline.size }}</span>
           {{ timeline.feed.title }}
