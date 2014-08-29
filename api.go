@@ -11,26 +11,11 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type TimelineData struct {
 	Next     string     `json:"next"`
 	Articles []rss.Item `json:"articles"`
-}
-
-type Article struct {
-	Author      string    `json:"author"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"description"`
-	Guid        string    `json:"guid"`
-	Id          string    `json:"id"`
-	Link        string    `json:"link"`
-	Origlink    string    `json:"origlink"`
-	Pubdate     time.Time `json:"pubdate"`
-	Summary     string    `json:"summary"`
-	Title       string    `json:"title"`
-	Fid         string    `json:"fid"`
 }
 
 type OPMLError struct {
@@ -48,7 +33,9 @@ func SubscriptionPage(w http.ResponseWriter, r *http.Request) {
 	b, err := json.MarshalIndent(subs, "", "    ")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer les abonnements de l'utilisateur", 500)
+		return
 	}
 
 	io.WriteString(w, string(b))
@@ -62,7 +49,8 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 	// On ajoute les timelines spéciales
 	size, err := storage.GetGlobalArticlesSize()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Impossible de récupérer la taille de la timeline globale")
+		log.Println(err)
 	}
 	global := storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
 
@@ -77,7 +65,9 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 	b, err := json.MarshalIndent(timelines, "", "    ")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer les timelines", 500)
+		return
 	}
 
 	io.WriteString(w, string(b))
@@ -87,7 +77,6 @@ func TimelinePage(w http.ResponseWriter, r *http.Request) {
 func TimelineStatus(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	timelineName := c.URLParams["name"]
-	log.Println(timelineName)
 
 	b := getTimelineStatus(timelineName)
 
@@ -104,7 +93,8 @@ func getTimelineStatus(timelineName string) (status string) {
 
 		size, err := storage.GetGlobalArticlesSize()
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Impossible de récupérer la taille de la timeline globale")
+			log.Println(err)
 		}
 
 		timeline = storage.Timeline{"global", "All items", size, rss.Feed{}, -1}
@@ -114,13 +104,15 @@ func getTimelineStatus(timelineName string) (status string) {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Impossible de récupérer la timeline")
+		log.Println(err)
 	}
 
 	b, err := json.MarshalIndent(timeline, "", "    ")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		log.Println("Impossible de récupérer la timeline")
 	}
 
 	return string(b)
@@ -130,7 +122,6 @@ func getTimelineStatus(timelineName string) (status string) {
 func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	timelineName := c.URLParams["name"]
-	log.Println(timelineName)
 
 	var articles []rss.Item
 	var err error
@@ -139,13 +130,18 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	if timelineName == "global" {
 		articles, err = storage.GetGlobalArticles()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			http.Error(w, "Impossible de récupérer la timeline globale", 500)
+			return
+
 		}
 	} else if timelineName == "archive" {
 		timelineId := storage.CurrentUser.SavedTimelineId
 		articles, err = storage.GetTimelineArticles(int64(timelineId))
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			http.Error(w, "Impossible de récupérer la timeline archive", 500)
+			return
 		}
 
 	} else {
@@ -154,7 +150,9 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 
 		articles, err = storage.GetTimelineArticles(int64(timelineId))
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			http.Error(w, "Impossible de récupérer la timeline", 500)
+			return
 		}
 	}
 
@@ -168,7 +166,7 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 	b, err := json.MarshalIndent(data, "", "    ")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	io.WriteString(w, string(b))
@@ -188,19 +186,23 @@ func addSubscription(w http.ResponseWriter, r *http.Request) {
 	// Création du Flux
 	feed, err := storage.CreateFeed(v.Url)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de créer le flux", 500)
+		return
 	}
 
 	// Création de la Timeline
 	err = storage.CreateTimeline(feed.Title, feed)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de créer la timeline", 500)
+		return
 	}
 
 	// Création de la sortie
 	out, err := json.MarshalIndent(feed, "", "    ")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	io.WriteString(w, string(out))
@@ -230,9 +232,10 @@ func addOPML(w http.ResponseWriter, r *http.Request) {
 	// Création de la sortie
 	out, err := json.MarshalIndent(feeds, "", "    ")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Erreur lors de l'importation", 500)
+		return
 	}
-	log.Println("Tttttt")
 
 	io.WriteString(w, string(out))
 
@@ -247,7 +250,7 @@ func exportOPML(w http.ResponseWriter, r *http.Request) {
 
 	out, err := xml.MarshalIndent(opml, "", "    ")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`)
@@ -259,10 +262,10 @@ func uploadError(w http.ResponseWriter, errorMsg error) {
 	output := OPMLError{ErrorMsg: errorMsg.Error()}
 	out, err := json.MarshalIndent(output, "", "    ")
 
-	log.Println("Error", err)
+	http.Error(w, err.Error(), 500)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	io.WriteString(w, string(out))
@@ -273,13 +276,12 @@ func removeSubscription(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	id := c.URLParams["id"]
 
-	log.Println("Suppression de la timeline", id)
-
 	idInt, _ := strconv.Atoi(id)
 
 	err := storage.RemoveTimeline(int64(idInt))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de supprimer l'abonnement", 500)
 	}
 
 	storage.LoadFeeds()
@@ -290,12 +292,13 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	id := c.URLParams["id"]
 	timeline := c.URLParams["timeline"]
-	log.Println("Suppression de l'article ", id)
 	idInt, _ := strconv.Atoi(id)
 
 	err := storage.RemoveArticle(int64(idInt), timeline)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de supprimer l'article", 500)
+		return
 	}
 
 	b := getTimelineStatus(timeline)
@@ -307,12 +310,13 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 func saveArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	id := c.URLParams["id"]
-	log.Println("Sauvegarde de l'article ", id)
 	idInt, _ := strconv.Atoi(id)
 
 	err := storage.SaveArticle(int64(idInt))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de sauvegarder l'article", 500)
+		return
 	}
 
 	b := getTimelineStatus("archive")
@@ -324,11 +328,12 @@ func saveArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 func removeTimelineArticles(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	timeline := c.URLParams["timeline"]
-	log.Println("Suppression des articles de la timeline ", timeline)
 
 	err := storage.RemoveTimelineArticles(timeline)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		http.Error(w, "Impossible de supprimer les articles de la timeline", 500)
+		return
 	}
 
 	b := getTimelineStatus(timeline)

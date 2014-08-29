@@ -30,11 +30,8 @@ func GetTimeline(name string) (t Timeline, err error) {
 		if err == sql.ErrNoRows {
 			return Timeline{}, nil
 		}
-		log.Println("Récupération du statut des archives")
 		return
 	}
-
-	log.Println("Récupération de la timeline")
 
 	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size, f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id where t.id = ?", name).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size, &t.Feed.Id, &t.Feed.Nickname, &t.Feed.Title, &t.Feed.Description, &t.Feed.Link, &t.Feed.UpdateURL, &t.Feed.Refresh, &t.Feed.Unread)
 
@@ -84,16 +81,11 @@ func LoadTimelines() (err error) {
 
 	Archive = t
 
-	log.Println("Timelines chargées")
-	log.Println(Timelines)
-
 	return nil
 
 }
 
 func CreateTimeline(title string, feed *rss.Feed) (err error) {
-
-	log.Println("Création de la timeline")
 
 	var timeline Timeline
 
@@ -107,8 +99,6 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 	if err != nil {
 		return err
 	}
-
-	log.Println("userId", CurrentUser.Id)
 
 	res, err := stmt.Exec(title, title, 0, feed.Id, CurrentUser.Id)
 	if err != nil {
@@ -125,12 +115,6 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 	if err != nil {
 		return err
 	}
-	rowCnt, err := res.RowsAffected()
-
-	if err != nil {
-		return err
-	}
-	log.Printf("Insertion d'une Timeline ID = %d, affected = %d\n", lastId, rowCnt)
 
 	return nil
 
@@ -140,8 +124,6 @@ func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
 
 	var article rss.Item
 	var articleFeedId int64
-
-	log.Println("Chargement des articles de la Timeline", timelineId)
 
 	rows, err := db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? ORDER BY a.pubdate ASC", timelineId)
 	if err != nil {
@@ -172,8 +154,6 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 
 	var article rss.Item
 
-	log.Println("Chargement des articles de la Timeline Globale")
-
 	// Création de la requête SQL
 	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
 	var args []interface{}
@@ -190,8 +170,6 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 	}
 
 	sql += " ORDER BY a.pubdate ASC"
-
-	log.Println(sql)
 
 	rows, err := db.Query(sql, args...)
 	if err != nil {
@@ -219,8 +197,6 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 }
 
 func GetGlobalArticlesSize() (size int, err error) {
-
-	log.Println("Chargement des articles de la Timeline Globable")
 
 	// Création de la requête SQL
 	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
@@ -285,8 +261,6 @@ func RemoveTimeline(feedId int64) (err error) {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Suppression de la timeline ID = %d", feedId)
 
 	// On la supprime également de la mémoire
 	delete(Timelines, timelineId)

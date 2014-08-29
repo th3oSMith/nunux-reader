@@ -19,26 +19,31 @@ func Init(sqlDB *sql.DB) {
 
 	err := LoadUsers()
 	if err != nil {
+		log.Println("Impossible de charger le module utilisateurs")
 		log.Fatal(err)
 	}
 	log.Println("Module Utilisateur chargé")
 
 	err = LoadFeeds()
 	if err != nil {
+		log.Println("Impossible de charger le module Flux")
 		log.Fatal(err)
 	}
 	log.Println("Module Flux chargé")
 
 	err = LoadTimelines()
 	if err != nil {
+		log.Println("Impossible de charger le module Timelines")
 		log.Fatal(err)
 	}
 	log.Println("Module Timelines chargé")
 
 	known, err := RecoverKnown()
 	if err != nil {
+		log.Println("Impossible de récupérer l'état du parseur")
 		log.Fatal(err)
 	}
+	log.Println("État du parseur chargé")
 
 	if len(known) > 0 {
 		rss.Restore(known)

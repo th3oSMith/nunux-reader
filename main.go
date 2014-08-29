@@ -27,26 +27,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Test de la connection à la base de données
+	err = db.Ping()
+	if err != nil {
+		log.Println("Impossible de se connecter à la base de données")
+		log.Fatal(err)
+	}
+
 	defer db.Close()
 
 	// Initialisation des modules
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 	InitUpdater()
-	/*
-		articles, err := storage.Feeds[13].GetNew()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Println(articles)
-
-		/*
-			err = storage.SaveArticles(articles, storage.Feeds[13].Id)
-			if err != nil {
-				log.Fatal(err)
-			}
-	*/
 
 	// Définition des routes
 
@@ -84,14 +77,14 @@ func main() {
 
 func Root(w http.ResponseWriter, r *http.Request) {
 
-	// Rechargement des flux et des timelines
-	//storage.LoadFeeds()
+	// Rechargement des timelines
 	storage.LoadTimelines()
 
 	// Chargement de la page
 	body, err := ioutil.ReadFile("views/index.html")
 
 	if err != nil {
+		log.Println("Impossible de lire le contenu statique du site")
 		log.Fatal(err)
 	}
 
