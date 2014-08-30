@@ -73,7 +73,7 @@ func LoadTimelines() (err error) {
 	}
 
 	var t Timeline
-	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size FROM timeline t WHERE t.id = ?", CurrentUser.SavedTimelineId).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t WHERE t.id = ?", CurrentUser.SavedTimelineId).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
 
 	if err != nil {
 		return err
