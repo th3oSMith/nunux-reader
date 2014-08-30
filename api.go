@@ -304,7 +304,7 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 	timeline := c.URLParams["timeline"]
 	idInt, _ := strconv.Atoi(id)
 
-	err := storage.RemoveArticle(int64(idInt), timeline)
+	err := storage.SoftRemoveArticle(int64(idInt), timeline)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Impossible de supprimer l'article", 500)

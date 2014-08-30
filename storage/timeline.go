@@ -21,7 +21,7 @@ var Archive Timeline
 func GetTimeline(name string) (t Timeline, err error) {
 
 	if name == "archive" {
-		err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size FROM timeline t  WHERE t.id = ?", Archive.Id).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+		err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t  WHERE t.id = ?", Archive.Id).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
 
 		if err != nil && err != sql.ErrNoRows {
 			return Timeline{}, err
@@ -33,7 +33,7 @@ func GetTimeline(name string) (t Timeline, err error) {
 		return
 	}
 
-	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size, f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id where t.id = ?", name).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size, &t.Feed.Id, &t.Feed.Nickname, &t.Feed.Title, &t.Feed.Description, &t.Feed.Link, &t.Feed.UpdateURL, &t.Feed.Refresh, &t.Feed.Unread)
+	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size, f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id where t.id = ?", name).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size, &t.Feed.Id, &t.Feed.Nickname, &t.Feed.Title, &t.Feed.Description, &t.Feed.Link, &t.Feed.UpdateURL, &t.Feed.Refresh, &t.Feed.Unread)
 
 	if err != nil && err != sql.ErrNoRows {
 		return Timeline{}, err
@@ -53,7 +53,7 @@ func LoadTimelines() (err error) {
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
-	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id WHERE t.user_id IS NOT NULL")
+	rows, err := db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size ,f.id, f.nickname, f.title, f.description, f.link, f.updateUrl, f.refresh, f.unread from timeline as t LEFT JOIN feed as f ON f.id = t.feed_id WHERE t.user_id IS NOT NULL")
 	if err != nil {
 		return err
 	}
@@ -128,9 +128,9 @@ func GetTimelineArticles(timelineId int64, nextId int64) (articles []rss.Item, e
 	var rows *sql.Rows
 
 	if nextId == 0 {
-		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? ORDER BY a.pubdate ASC LIMIT ?", timelineId, MaxArticles)
+		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND at.timeline_id = ? ORDER BY a.pubdate ASC LIMIT ?", timelineId, MaxArticles)
 	} else {
-		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? AND a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) ORDER BY a.pubdate ASC LIMIT ?", timelineId, nextId, nextId, MaxArticles)
+		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND at.timeline_id = ? AND a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) ORDER BY a.pubdate ASC LIMIT ?", timelineId, nextId, nextId, MaxArticles)
 	}
 	if err != nil {
 		return nil, err
@@ -164,9 +164,9 @@ func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
 
 	// Création de la requête SQL
 	if nextId == 0 {
-		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE ("
+		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND ("
 	} else {
-		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) AND ("
+		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) AND ("
 		args = append(args, nextId)
 		args = append(args, nextId)
 	}
@@ -213,7 +213,7 @@ func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
 func GetGlobalArticlesSize() (size int, err error) {
 
 	// Création de la requête SQL
-	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
+	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND ("
 	var args []interface{}
 
 	for _, timeline := range Timelines {
@@ -226,7 +226,7 @@ func GetGlobalArticlesSize() (size int, err error) {
 	} else {
 		sql = sql[:len(sql)-6]
 	}
-
+	sql += ")"
 	err = db.QueryRow(sql, args...).Scan(&size)
 
 	if err != nil {

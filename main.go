@@ -40,6 +40,7 @@ func main() {
 	log.Println("---Initialisation des modules---")
 	storage.Init(db)
 	InitUpdater()
+	InitDeleter()
 
 	// Définition des routes
 

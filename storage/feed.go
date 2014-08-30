@@ -218,9 +218,9 @@ func RemoveFeed(feedId int64) (err error) {
 
 }
 
-func RemoveArticle(id int64, timelineName string) (err error) {
+func SoftRemoveArticle(id int64, timelineName string) (err error) {
 
-	sqlQ := "DELETE FROM article_timelines WHERE article_id = ? AND ("
+	sqlQ := "UPDATE article_timelines SET delete_date = NOW() WHERE article_id = ? AND ("
 	var args []interface{}
 
 	args = append(args, id)
@@ -247,6 +247,28 @@ func RemoveArticle(id int64, timelineName string) (err error) {
 		Timelines[timeId].Size--
 
 	}
+
+	stmt, err := db.Prepare(sqlQ)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func RemoveArticle(id int64, timelineId int64) (err error) {
+
+	sqlQ := "DELETE FROM article_timelines WHERE article_id = ? AND timeline_id = ?"
+	var args []interface{}
+
+	args = append(args, id)
+	args = append(args, timelineId)
 
 	stmt, err := db.Prepare(sqlQ)
 	if err != nil {
