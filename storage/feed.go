@@ -8,8 +8,9 @@ import (
 )
 
 var Feeds map[int64]*rss.Feed
+var UserFeeds map[int64]map[int64]*rss.Feed
 
-func CreateFeed(url string) (feed *rss.Feed, err error) {
+func CreateFeed(url string, c Context) (feed *rss.Feed, err error) {
 
 	feed, err = rss.Fetch(url)
 
@@ -36,6 +37,8 @@ func CreateFeed(url string) (feed *rss.Feed, err error) {
 	// Ajout à la liste des flux chargés
 	Feeds[feed.Id] = feed
 	Feeds[feed.Id].Items = []*rss.Item{}
+
+	c.Feeds[feed.Id] = feed
 
 	if err != nil {
 		return nil, err
@@ -100,18 +103,18 @@ func GetFeedArticles(feedId int64) (articles []rss.Item, err error) {
 	return articles, nil
 }
 
-func SaveArticle(id int64) (err error) {
+func SaveArticle(id int64, c Context) (err error) {
 
 	// On enregistre l'article dans la timeline des sauvegardes de l'utilsateur
 	stmt2, err := db.Prepare("INSERT INTO article_timelines(article_id, timeline_id) VALUES(?, ?)")
 
-	timelineId := CurrentUser.SavedTimelineId
+	timelineId := c.Archive.Id
 	_, err = stmt2.Exec(id, timelineId)
 	if err != nil {
 		return err
 	}
 
-	Archive.Size++
+	c.Archive.Size++
 
 	return nil
 
@@ -172,6 +175,7 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 
 	// On met à jour les timelines en mémoire
 	LoadTimelines()
+	UpdateUsers()
 
 	return nil
 }
@@ -218,7 +222,7 @@ func RemoveFeed(feedId int64) (err error) {
 
 }
 
-func SoftRemoveArticle(id int64, timelineName string) (err error) {
+func SoftRemoveArticle(id int64, timelineName string, c Context) (err error) {
 
 	sqlQ := "UPDATE article_timelines SET delete_date = NOW() WHERE article_id = ? AND ("
 	var args []interface{}
@@ -231,20 +235,24 @@ func SoftRemoveArticle(id int64, timelineName string) (err error) {
 			args = append(args, timeline.Id)
 		}
 		sqlQ = sqlQ[:len(sqlQ)-3] + ")"
+		UpdateUser(c.User.Id)
 
 	} else if timelineName == "archive" {
 
-		timeId := CurrentUser.SavedTimelineId
+		timeId := c.Archive.Id
 		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
-		Archive.Size--
+		c.Archive.Size--
+		Archives[c.Archive.Id].Size--
 
 	} else {
 		tmp, _ := strconv.Atoi(timelineName)
 		timeId := int64(tmp)
 		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
+
 		Timelines[timeId].Size--
+		c.Timelines[timeId].Size--
 
 	}
 
@@ -261,7 +269,8 @@ func SoftRemoveArticle(id int64, timelineName string) (err error) {
 	return nil
 
 }
-func RecoverArticle(id int64, timelineName string) (err error) {
+
+func RecoverArticle(id int64, timelineName string, c Context) (err error) {
 
 	sqlQ := "UPDATE article_timelines SET delete_date = NULL WHERE article_id = ? AND ("
 	var args []interface{}
@@ -274,20 +283,23 @@ func RecoverArticle(id int64, timelineName string) (err error) {
 			args = append(args, timeline.Id)
 		}
 		sqlQ = sqlQ[:len(sqlQ)-3] + ")"
+		UpdateUsers()
 
 	} else if timelineName == "archive" {
 
-		timeId := CurrentUser.SavedTimelineId
+		timeId := c.Archive.Id
 		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
-		Archive.Size--
+		c.Archive.Size++
+		Archives[c.Archive.Id].Size++
 
 	} else {
 		tmp, _ := strconv.Atoi(timelineName)
 		timeId := int64(tmp)
 		sqlQ += "timeline_id = ?) "
 		args = append(args, timeId)
-		Timelines[timeId].Size--
+		Timelines[timeId].Size++
+		c.Timelines[timeId].Size++
 
 	}
 

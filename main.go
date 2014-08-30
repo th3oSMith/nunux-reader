@@ -46,6 +46,7 @@ func main() {
 
 	// Accueil du site
 	goji.Get("/", Root)
+	goji.Use(SuperSecure)
 
 	// Page nécessitant une authentification
 	api := web.New()

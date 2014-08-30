@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func AddOPML(opml []byte) (feeds []rss.Feed, err error) {
+func AddOPML(opml []byte, c Context) (feeds []rss.Feed, err error) {
 
 	log.Println("Récupération de l'OPML")
 
@@ -19,7 +19,7 @@ func AddOPML(opml []byte) (feeds []rss.Feed, err error) {
 
 	for _, x := range v.Body.Outline.Outline {
 		// Création du Flux
-		feed, err := CreateFeed(x.XmlUrl)
+		feed, err := CreateFeed(x.XmlUrl, c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -27,7 +27,7 @@ func AddOPML(opml []byte) (feeds []rss.Feed, err error) {
 		feeds = append(feeds, *feed)
 
 		// Création de la Timeline
-		err = CreateTimeline(feed.Title, feed)
+		err = CreateTimeline(feed.Title, feed, c)
 		if err != nil {
 			log.Fatal(err)
 		}

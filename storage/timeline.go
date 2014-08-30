@@ -16,12 +16,14 @@ type Timeline struct {
 }
 
 var Timelines map[int64]*Timeline
-var Archive Timeline
+var Archives map[int64]*Timeline
 
-func GetTimeline(name string) (t Timeline, err error) {
+var UserTimelines map[int64]map[int64]*Timeline
+
+func GetTimeline(name string, c Context) (t Timeline, err error) {
 
 	if name == "archive" {
-		err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t  WHERE t.id = ?", Archive.Id).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+		err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t  WHERE t.id = ?", c.Archive.Id).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
 
 		if err != nil && err != sql.ErrNoRows {
 			return Timeline{}, err
@@ -47,9 +49,35 @@ func GetTimeline(name string) (t Timeline, err error) {
 
 }
 
+func GetUserTimelines(userId int64) (ids []Timeline, err error) {
+
+	rows, err := db.Query("SELECT id, feed_id FROM timeline WHERE user_id = ? ", userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var t Timeline
+		err := rows.Scan(&t.Id, &t.Feed.Id)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, t)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return
+
+}
+
 func LoadTimelines() (err error) {
 
 	Timelines = make(map[int64]*Timeline)
+	Archives = make(map[int64]*Timeline)
 	// Initialization de la map
 	log.Println("Chargement des Timelines")
 
@@ -72,20 +100,30 @@ func LoadTimelines() (err error) {
 		return err
 	}
 
-	var t Timeline
-	err = db.QueryRow("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t WHERE t.id = ?", CurrentUser.SavedTimelineId).Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
-
+	rows, err = db.Query("select t.id, t.timeline, t.title, (SELECT COUNT(*) FROM article_timelines WHERE timeline_id = t.id AND delete_date IS NULL) size FROM timeline t WHERE t.user_id IS NULL")
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	Archive = t
+	for rows.Next() {
+		var t Timeline
+		err := rows.Scan(&t.Id, &t.Timeline, &t.Title, &t.Size)
+		if err != nil {
+			return err
+		}
+		Archives[t.Id] = &t
+	}
+	err = rows.Err()
+	if err != nil {
+		return err
+	}
 
 	return nil
 
 }
 
-func CreateTimeline(title string, feed *rss.Feed) (err error) {
+func CreateTimeline(title string, feed *rss.Feed, c Context) (err error) {
 
 	var timeline Timeline
 
@@ -100,7 +138,7 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 		return err
 	}
 
-	res, err := stmt.Exec(title, title, 0, feed.Id, CurrentUser.Id)
+	res, err := stmt.Exec(title, title, 0, feed.Id, c.User.Id)
 	if err != nil {
 		return err
 	}
@@ -111,6 +149,7 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 
 	// Ajout à la liste des flux chargés
 	Timelines[timeline.Id] = &timeline
+	c.Timelines[timeline.Id] = &timeline
 
 	if err != nil {
 		return err
@@ -156,7 +195,7 @@ func GetTimelineArticles(timelineId int64, nextId int64) (articles []rss.Item, e
 
 }
 
-func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
+func GetGlobalArticles(nextId int64, c Context) (articles []rss.Item, err error) {
 
 	var article rss.Item
 	var args []interface{}
@@ -171,12 +210,12 @@ func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
 		args = append(args, nextId)
 	}
 
-	for _, timeline := range Timelines {
+	for _, timeline := range c.Timelines {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
 
-	if len(Timelines) > 0 {
+	if len(c.Timelines) > 0 {
 		sql = sql[:len(sql)-3]
 	} else {
 		sql = sql[:len(sql)-6]
@@ -210,18 +249,18 @@ func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
 
 }
 
-func GetGlobalArticlesSize() (size int, err error) {
+func GetGlobalArticlesSize(c Context) (size int, err error) {
 
 	// Création de la requête SQL
 	sql := "select COUNT(*) size from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.delete_date IS NULL AND ("
 	var args []interface{}
 
-	for _, timeline := range Timelines {
+	for _, timeline := range c.Timelines {
 		sql += "at.timeline_id = ? OR "
 		args = append(args, timeline.Id)
 	}
 
-	if len(Timelines) > 0 {
+	if len(c.Timelines) > 0 {
 		sql = sql[:len(sql)-3]
 	} else {
 		sql = sql[:len(sql)-6]
@@ -237,12 +276,12 @@ func GetGlobalArticlesSize() (size int, err error) {
 
 }
 
-func RemoveTimeline(feedId int64) (err error) {
+func RemoveTimeline(feedId int64, c Context) (err error) {
 
 	var timelineId int64
 
 	// Récupération de l'id de la timeleine
-	err = db.QueryRow("select id FROM timeline WHERE feed_id = ? AND user_id = ?", feedId, CurrentUser.Id).Scan(&timelineId)
+	err = db.QueryRow("select id FROM timeline WHERE feed_id = ? AND user_id = ?", feedId, c.User.Id).Scan(&timelineId)
 
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -278,6 +317,8 @@ func RemoveTimeline(feedId int64) (err error) {
 
 	// On la supprime également de la mémoire
 	delete(Timelines, timelineId)
+	delete(c.Timelines, timelineId)
+	delete(c.Feeds, feedId)
 
 	// On supprime le flux si jamais il n'est plus utilisé
 

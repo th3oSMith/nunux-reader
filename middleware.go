@@ -22,7 +22,7 @@ func SuperSecure(c *web.C, h http.Handler) http.Handler {
 		// On regarde si les identifiants sont enregistrés
 		credentials, err := base64.StdEncoding.DecodeString(auth[6:])
 
-		if err != nil || isUser(string(credentials)) != true {
+		if err != nil || isUser(string(credentials), auth) != true {
 			pleaseAuth(w)
 			return
 		}
@@ -38,13 +38,16 @@ func pleaseAuth(w http.ResponseWriter) {
 	w.Write([]byte("Go away!\n"))
 }
 
-func isUser(credentials string) bool {
+func isUser(credentials string, auth string) bool {
 
 	for _, user := range storage.Users {
 		if credentials == user.Username+":"+user.Password {
-			storage.CurrentUser = user
+			storage.CurrentUsers[auth] = user
+			storage.InitUser(user)
+			storage.UpdateUser(user.Id) // Magic
 			return true
 		}
 	}
+
 	return false
 }

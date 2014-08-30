@@ -10,6 +10,13 @@ import (
 	"os"
 )
 
+type Context struct {
+	User      User
+	Feeds     map[int64]*rss.Feed
+	Timelines map[int64]*Timeline
+	Archive   *Timeline
+}
+
 var db *sql.DB
 
 // Paramètres
@@ -54,6 +61,11 @@ func Init(sqlDB *sql.DB) {
 
 	// Initialisation des paramètres
 	MaxArticles = 10
+
+	// Initialisation des map pour les utilisateurs
+	UserFeeds = make(map[int64]map[int64]*rss.Feed)
+	UserTimelines = make(map[int64]map[int64]*Timeline)
+	CurrentUsers = make(map[string]User)
 
 }
 
