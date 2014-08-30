@@ -63,10 +63,11 @@ func main() {
 	api.Post("/api/subscriptionOPML", addOPML)
 	api.Delete("/api/subscription/:id", removeSubscription)
 
-	api.Delete("/api/timeline/:timeline/:id", removeArticle)
-	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
-
 	api.Put("/api/timeline/archive/:id", saveArticle)
+
+	api.Delete("/api/timeline/:timeline/:id", removeArticle)
+	api.Put("/api/timeline/:timeline/:id", recoverArticle)
+	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
 
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes

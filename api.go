@@ -317,6 +317,25 @@ func removeArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 
 }
 
+func recoverArticle(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	id := c.URLParams["id"]
+	timeline := c.URLParams["timeline"]
+	idInt, _ := strconv.Atoi(id)
+
+	err := storage.RecoverArticle(int64(idInt), timeline)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer l'article", 500)
+		return
+	}
+
+	b := getTimelineStatus(timeline)
+
+	io.WriteString(w, b)
+
+}
+
 func saveArticle(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	id := c.URLParams["id"]

@@ -261,6 +261,49 @@ func SoftRemoveArticle(id int64, timelineName string) (err error) {
 	return nil
 
 }
+func RecoverArticle(id int64, timelineName string) (err error) {
+
+	sqlQ := "UPDATE article_timelines SET delete_date = NULL WHERE article_id = ? AND ("
+	var args []interface{}
+
+	args = append(args, id)
+
+	if timelineName == "global" {
+		for _, timeline := range Timelines {
+			sqlQ += "timeline_id = ? OR "
+			args = append(args, timeline.Id)
+		}
+		sqlQ = sqlQ[:len(sqlQ)-3] + ")"
+
+	} else if timelineName == "archive" {
+
+		timeId := CurrentUser.SavedTimelineId
+		sqlQ += "timeline_id = ?) "
+		args = append(args, timeId)
+		Archive.Size--
+
+	} else {
+		tmp, _ := strconv.Atoi(timelineName)
+		timeId := int64(tmp)
+		sqlQ += "timeline_id = ?) "
+		args = append(args, timeId)
+		Timelines[timeId].Size--
+
+	}
+
+	stmt, err := db.Prepare(sqlQ)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
 
 func RemoveArticle(id int64, timelineId int64) (err error) {
 
