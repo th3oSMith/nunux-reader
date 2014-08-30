@@ -12,39 +12,58 @@ var UserFeeds map[int64]map[int64]*rss.Feed
 
 func CreateFeed(url string, c Context) (feed *rss.Feed, err error) {
 
-	feed, err = rss.Fetch(url)
+	var id int64
 
-	if err != nil {
+	// On regarde si le flux existe déjà
+	err = db.QueryRow("SELECT id FROM feed WHERE updateUrl = ?", url).Scan(&id)
+
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 
-	// Enregistrement dans la base SQL
-	stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread) VALUES(?, ?, ?, ?, ?, ?, ?)")
+	if err == sql.ErrNoRows {
 
-	if err != nil {
-		return nil, err
+		feed, err = rss.Fetch(url)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Enregistrement dans la base SQL
+		stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread) VALUES(?, ?, ?, ?, ?, ?, ?)")
+
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread)
+		if err != nil {
+			return nil, err
+		}
+		lastId, err := res.LastInsertId()
+
+		// Assignation de l'id
+		feed.Id = lastId
+
+		// Ajout à la liste des flux chargés
+		Feeds[feed.Id] = feed
+		Feeds[feed.Id].Items = []*rss.Item{}
+
+		c.Feeds[feed.Id] = feed
+
+		if err != nil {
+			return nil, err
+		}
+
+		return feed, nil
 	}
 
-	res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread)
-	if err != nil {
-		return nil, err
-	}
-	lastId, err := res.LastInsertId()
+	log.Println("Flux existant")
+	oldFeed := Feeds[id]
 
-	// Assignation de l'id
-	feed.Id = lastId
+	c.Feeds[id] = oldFeed
 
-	// Ajout à la liste des flux chargés
-	Feeds[feed.Id] = feed
-	Feeds[feed.Id].Items = []*rss.Item{}
-
-	c.Feeds[feed.Id] = feed
-
-	if err != nil {
-		return nil, err
-	}
-
-	return feed, nil
+	return oldFeed, nil
 
 }
 
@@ -230,7 +249,7 @@ func SoftRemoveArticle(id int64, timelineName string, c Context) (err error) {
 	args = append(args, id)
 
 	if timelineName == "global" {
-		for _, timeline := range Timelines {
+		for _, timeline := range c.Timelines {
 			sqlQ += "timeline_id = ? OR "
 			args = append(args, timeline.Id)
 		}
@@ -278,7 +297,7 @@ func RecoverArticle(id int64, timelineName string, c Context) (err error) {
 	args = append(args, id)
 
 	if timelineName == "global" {
-		for _, timeline := range Timelines {
+		for _, timeline := range c.Timelines {
 			sqlQ += "timeline_id = ? OR "
 			args = append(args, timeline.Id)
 		}
@@ -365,13 +384,13 @@ func RemoveArticle(id int64, timelineId int64) (err error) {
 
 }
 
-func RemoveTimelineArticles(timelineName string) (err error) {
+func RemoveTimelineArticles(timelineName string, c Context) (err error) {
 
 	sql := "DELETE FROM article_timelines WHERE ("
 	var args []interface{}
 
 	if timelineName == "global" {
-		for _, timeline := range Timelines {
+		for _, timeline := range c.Timelines {
 			sql += "timeline_id = ? OR "
 			args = append(args, timeline.Id)
 		}
@@ -383,6 +402,7 @@ func RemoveTimelineArticles(timelineName string) (err error) {
 		sql += "timeline_id = ?) "
 		args = append(args, timeId)
 		Timelines[timeId].Size = 0
+		c.Timelines[timeId].Size = 0
 
 	}
 

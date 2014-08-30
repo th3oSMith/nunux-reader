@@ -389,7 +389,7 @@ func removeTimelineArticles(c web.C, w http.ResponseWriter, r *http.Request) {
 	context := getContext(r)
 	timeline := c.URLParams["timeline"]
 
-	err := storage.RemoveTimelineArticles(timeline)
+	err := storage.RemoveTimelineArticles(timeline, context)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Impossible de supprimer les articles de la timeline", 500)
