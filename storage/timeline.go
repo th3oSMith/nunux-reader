@@ -120,12 +120,18 @@ func CreateTimeline(title string, feed *rss.Feed) (err error) {
 
 }
 
-func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
+func GetTimelineArticles(timelineId int64, nextId int64) (articles []rss.Item, err error) {
 
 	var article rss.Item
 	var articleFeedId int64
 
-	rows, err := db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? ORDER BY a.pubdate ASC", timelineId)
+	var rows *sql.Rows
+
+	if nextId == 0 {
+		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? ORDER BY a.pubdate ASC LIMIT ?", timelineId, MaxArticles)
+	} else {
+		rows, err = db.Query("select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE at.timeline_id = ? AND a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) ORDER BY a.pubdate ASC LIMIT ?", timelineId, nextId, nextId, MaxArticles)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -150,13 +156,20 @@ func GetTimelineArticles(timelineId int64) (articles []rss.Item, err error) {
 
 }
 
-func GetGlobalArticles() (articles []rss.Item, err error) {
+func GetGlobalArticles(nextId int64) (articles []rss.Item, err error) {
 
 	var article rss.Item
+	var args []interface{}
+	var sql string
 
 	// Création de la requête SQL
-	sql := "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE "
-	var args []interface{}
+	if nextId == 0 {
+		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE ("
+	} else {
+		sql = "select a.id, a.date, a.description, a.link, a.pubdate, a.title, a.feed_id from article as a LEFT JOIN article_timelines as at ON a.id = at.article_id WHERE a.id != ? AND a.pubdate >= (SELECT pubdate FROM article WHERE id = ?) AND ("
+		args = append(args, nextId)
+		args = append(args, nextId)
+	}
 
 	for _, timeline := range Timelines {
 		sql += "at.timeline_id = ? OR "
@@ -169,7 +182,8 @@ func GetGlobalArticles() (articles []rss.Item, err error) {
 		sql = sql[:len(sql)-6]
 	}
 
-	sql += " ORDER BY a.pubdate ASC"
+	sql += ") ORDER BY a.pubdate ASC LIMIT ?"
+	args = append(args, MaxArticles)
 
 	rows, err := db.Query(sql, args...)
 	if err != nil {

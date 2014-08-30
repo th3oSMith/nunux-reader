@@ -12,6 +12,9 @@ import (
 
 var db *sql.DB
 
+// Paramètres
+var MaxArticles int
+
 func Init(sqlDB *sql.DB) {
 
 	db = sqlDB
@@ -48,6 +51,9 @@ func Init(sqlDB *sql.DB) {
 	if len(known) > 0 {
 		rss.Restore(known)
 	}
+
+	// Initialisation des paramètres
+	MaxArticles = 10
 
 }
 

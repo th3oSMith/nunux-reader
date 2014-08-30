@@ -14,7 +14,7 @@ import (
 )
 
 type TimelineData struct {
-	Next     string     `json:"next"`
+	Next     int64      `json:"next"`
 	Articles []rss.Item `json:"articles"`
 }
 
@@ -123,12 +123,18 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	timelineName := c.URLParams["name"]
 
-	var articles []rss.Item
 	var err error
+	var nextId int
+
+	if len(r.URL.Query()["next"]) > 0 {
+		nextId, _ = strconv.Atoi(r.URL.Query()["next"][0])
+	}
+
+	var articles []rss.Item
 
 	// Gestion des cas particuliers
 	if timelineName == "global" {
-		articles, err = storage.GetGlobalArticles()
+		articles, err = storage.GetGlobalArticles(int64(nextId))
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "Impossible de récupérer la timeline globale", 500)
@@ -137,7 +143,7 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 	} else if timelineName == "archive" {
 		timelineId := storage.CurrentUser.SavedTimelineId
-		articles, err = storage.GetTimelineArticles(int64(timelineId))
+		articles, err = storage.GetTimelineArticles(int64(timelineId), int64(nextId))
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "Impossible de récupérer la timeline archive", 500)
@@ -148,7 +154,7 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 
 		timelineId, _ := strconv.Atoi(timelineName)
 
-		articles, err = storage.GetTimelineArticles(int64(timelineId))
+		articles, err = storage.GetTimelineArticles(int64(timelineId), int64(nextId))
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "Impossible de récupérer la timeline", 500)
@@ -156,11 +162,15 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := TimelineData{"next?", articles}
+	var next int64
+	if len(articles) > 0 && len(articles) == storage.MaxArticles {
+		next = articles[len(articles)-1].Id
+	}
+
+	data := TimelineData{next, articles}
 
 	if len(articles) == 0 {
 		data.Articles = []rss.Item{}
-		data.Next = ""
 	}
 
 	b, err := json.MarshalIndent(data, "", "    ")
