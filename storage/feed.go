@@ -10,7 +10,7 @@ import (
 var Feeds map[int64]*rss.Feed
 var UserFeeds map[int64]map[int64]*rss.Feed
 
-func CreateFeed(url string, c Context) (feed *rss.Feed, err error) {
+func CreateFeed(url string, c Context, insecure bool, credentials rss.Credentials) (feed *rss.Feed, err error) {
 
 	var id int64
 
@@ -23,20 +23,20 @@ func CreateFeed(url string, c Context) (feed *rss.Feed, err error) {
 
 	if err == sql.ErrNoRows {
 
-		feed, err = rss.Fetch(url)
+		feed, err = rss.Fetch(url, insecure, credentials)
 
 		if err != nil {
 			return nil, err
 		}
 
 		// Enregistrement dans la base SQL
-		stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread) VALUES(?, ?, ?, ?, ?, ?, ?)")
+		stmt, err := db.Prepare("INSERT INTO feed(nickname, title, description, link, updateUrl, refresh, unread, insecure, username, password) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
 		if err != nil {
 			return nil, err
 		}
 
-		res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread)
+		res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread, feed.Insecure, feed.Credentials.Username, feed.Credentials.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func LoadFeeds() (err error) {
 
 	for rows.Next() {
 		var feed rss.Feed
-		err := rows.Scan(&feed.Id, &feed.Nickname, &feed.Title, &feed.Description, &feed.Link, &feed.UpdateURL, &feed.Refresh, &feed.Unread)
+		err := rows.Scan(&feed.Id, &feed.Nickname, &feed.Title, &feed.Description, &feed.Link, &feed.UpdateURL, &feed.Refresh, &feed.Unread, &feed.Insecure, &feed.Credentials.Username, &feed.Credentials.Password)
 		if err != nil {
 			return err
 		}

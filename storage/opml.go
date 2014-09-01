@@ -19,7 +19,7 @@ func AddOPML(opml []byte, c Context) (feeds []rss.Feed, err error) {
 
 	for _, x := range v.Body.Outline.Outline {
 		// Création du Flux
-		feed, err := CreateFeed(x.XmlUrl, c)
+		feed, err := CreateFeed(x.XmlUrl, c, false, rss.Credentials{})
 		if err != nil {
 			log.Fatal(err)
 		}

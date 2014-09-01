@@ -12,10 +12,15 @@
         <form name="addSubscription">
           <fieldset>
             <legend>Subscribe</legend>
-            <input type="url" name="url" ng-model="newFeedUrl" placeholder="Type RSS URL here" required/>
+            <input type="url" name="url" ng-model="newFeedUrl" placeholder="Type RSS URL here" required/><br/>
             <span class="help-block">e.g., http://rss.cnn.com/rss/edition.rss</span>
-            <button class="btn btn-default" ng-click="subscribe(newFeedUrl)">
+            <label><input type="checkbox" ng-model="newFeedInsecure" name="insecure" value="insecure">Insecure Https</label><br>
+            <input type="text" name="username" ng-model="newFeedUsername" placeholder="Username"/><br/>
+            <input type="password" name="password" ng-model="newFeedPassword" placeholder="Password"/><br/>
+            <span class="help-block">If the feed is protected by a basic auth</span>
+            <button class="btn btn-default" ng-click="subscribe(newFeedUrl, newFeedInsecure, newFeedUsername, newFeedPassword)">
               <span class="glyphicon glyphicon-plus"></span>
+
               Subscribe
             </button>
           </fieldset>

@@ -24,6 +24,9 @@ CREATE TABLE feed (
                       updateUrl VARCHAR(255) NOT NULL,
                       refresh DATETIME NOT NULL,
                       unread INT NOT NULL,
+                      insecure INT(1) NOT NULL,
+                      username VARCHAR(50) NOT NULL,
+                      password VARCHAR(50) NOT NULL,
                       PRIMARY KEY (id)
                       ) ENGINE=INNODB;
 

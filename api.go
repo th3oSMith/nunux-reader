@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type TimelineData struct {
@@ -203,7 +204,10 @@ func getTimeline(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 type receiver struct {
-	Url string
+	Url      string
+	Insecure bool
+	Username string
+	Password string
 }
 
 func addSubscription(w http.ResponseWriter, r *http.Request) {
@@ -215,10 +219,17 @@ func addSubscription(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&v)
 
 	// Création du Flux
-	feed, err := storage.CreateFeed(v.Url, c)
+	feed, err := storage.CreateFeed(v.Url, c, v.Insecure, rss.Credentials{Username: v.Username, Password: v.Password})
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Impossible de créer le flux", 500)
+		if strings.Contains(err.Error(), "unknown authority") {
+			http.Error(w, "Certificat signed by unknown authority", 500)
+			return
+		}
+		if v.Username != "" && strings.Contains(err.Error(), "<feed>") {
+			http.Error(w, "Wrong Login/Password", 500)
+			return
+		}
+		http.Error(w, err.Error(), 500)
 		return
 	}
 

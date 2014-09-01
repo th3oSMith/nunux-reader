@@ -73,17 +73,17 @@ angular.module('ManageModule', ['ngUpload'])
     }
   };
 
-  $scope.subscribe = function(url) {
+  $scope.subscribe = function(url, insecure, username, password) {
     if (url) {
-      $http.post('/api/subscription', {url: url})
+      $http.post('/api/subscription', {url: url, insecure: insecure, username: username, password: password})
       .success(function(feed) {
         $scope.message = {clazz: 'alert-success', text: 'Feed "' + feed.title + '" successfully added.'};
         $scope.subscriptions.push(feed);
         $scope.newFeedUrl = null;
         $rootScope.$broadcast('app.event.subscriptions.add', feed);
       })
-      .error(function() {
-        $scope.message = {clazz: 'alert-danger', text: 'Unable to remove Feed "' + url + '"!'};
+      .error(function(data) {
+        $scope.message = {clazz: 'alert-danger', text: 'Unable to create Feed "' + url + '"! ' + data};
       });
     }
   };
