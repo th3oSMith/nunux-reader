@@ -8,7 +8,7 @@
 <section data-ng-init="find()">
     <div class="alert" ng-show="message" ng-class="message.clazz">{{message.text}}</div>
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-xs-11 col-md-5">
             <form class="form-horizontal" role="form" name="addUser">
             <fieldset>
                 <legend>Add User</legend>
@@ -24,18 +24,14 @@
                         <input type="password" name="password" ng-model="newUserPassword"/>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="col-md-offset-2">
-                        <button class="btn btn-default col-md-7" ng-click="createUser(newUserUsername, newUserPassword)">
-                            <span class="glyphicon glyphicon-plus"></span>
-                            Add User
-                        </button>
-                    </div>
-                </div>
+                <button class="btn btn-default" ng-click="createUser(newUserUsername, newUserPassword)">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    Add User
+                </button>
             </fieldset>
-            </form>
+        </form>
         </div>
-        <div class="col-md-5">
+        <div class="col-xs-11 col-md-5">
             <form class="form-horizontal" role="form" name="addUser">
             <fieldset>
                 <legend>Edit User</legend>
@@ -52,14 +48,10 @@
                     </div>
                     <input type="hidden" ng-model="editUserId">
                 </div>
-                <div class="form-group">
-                    <div class="col-md-offset-2">
-                        <button class="btn btn-default col-md-7" ng-click="updateUser(editUserUsername, editUserPassword, editUserId)">
-                            <span class="glyphicon glyphicon-pencil"></span>
-                            Edit User
-                        </button>
-                    </div>
-                </div>
+                <button class="btn btn-default" ng-click="updateUser(editUserUsername, editUserPassword, editUserId)">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                    Edit User
+                </button>
             </fieldset>
             </form>
         </div>
