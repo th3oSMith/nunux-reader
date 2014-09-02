@@ -48,7 +48,7 @@
           <span class="glyphicon glyphicon-cog"></span>
           Manage
         </a>
-        <a href="#admin" class="list-group-item" title="User Administration" ng-class="{active: $root.currentPage == 'admin'}">
+        <a href="#admin" ng-if="isAdmin === true" class="list-group-item" title="User Administration" ng-class="{active: $root.currentPage == 'admin'}">
           <span class="glyphicon glyphicon-user"></span>
           User Admin
         </a>

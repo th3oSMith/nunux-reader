@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('SidebarModule', [])
-.controller('SidebarCtrl', function ($scope, $rootScope, $http, $location, $dialog) {
+angular.module('SidebarModule', ['AdminModule'])
+.controller('SidebarCtrl', function ($scope, $rootScope, $http, $location, $dialog, Users) {
   $scope.order = '-size';
   $scope.refresh = function() {
     $http.get('/api/timeline').success(function (data) {
@@ -78,4 +78,13 @@ angular.module('SidebarModule', [])
   };
 
   $scope.refresh();
+
+  $scope.isAdmin = Users.currentUser({userId: "current"});
+
+  $scope.isAdmin.$then(function (user){
+    if (user.data.id === 1) {
+      $scope.isAdmin = true;
+    }
+  });
+
 });

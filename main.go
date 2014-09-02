@@ -71,12 +71,18 @@ func main() {
 	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
 
 	// REST User
-	api.Get("/api/user", getUsers)
-	api.Get("/api/user/current", getCurrentUser)
-	api.Get("/api/user/:userId", getUser)
-	api.Post("/api/user", createUser)
-	api.Put("/api/user/:userId", updateUser)
-	api.Delete("/api/user/:userId", deleteUser)
+
+	admin := web.New()
+	goji.Handle("/admin/*", admin)
+	admin.Use(SuperSecure)
+	admin.Use(Admin)
+
+	admin.Get("/admin/user", getUsers)
+	admin.Get("/admin/user/current", getCurrentUser)
+	admin.Get("/admin/user/:userId", getUser)
+	admin.Post("/admin/user", createUser)
+	admin.Put("/admin/user/:userId", updateUser)
+	admin.Delete("/admin/user/:userId", deleteUser)
 
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes

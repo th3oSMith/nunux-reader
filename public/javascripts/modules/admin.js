@@ -2,7 +2,7 @@
 
 angular.module('AdminModule', [])
 .factory('Users', ['$resource', function($resource) {
-    return $resource('api/user/:userId', {
+    return $resource('admin/user/:userId', {
         userId: '@_id'
     }, {
       currentUser: {method:'GET'},

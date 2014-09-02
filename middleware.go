@@ -32,6 +32,23 @@ func SuperSecure(c *web.C, h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+func Admin(c *web.C, h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+
+		user := storage.CurrentUsers[auth]
+
+		if user.Id != 1 {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Go away!\n"))
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
 func pleaseAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", `Basic realm="Nunux-Reader"`)
 	w.WriteHeader(http.StatusUnauthorized)
