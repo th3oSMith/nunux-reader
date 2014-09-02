@@ -412,3 +412,143 @@ func removeTimelineArticles(c web.C, w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, b)
 
 }
+
+/**
+ * User API
+ */
+
+func getUsers(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	var safeUsers []storage.User
+
+	for _, user := range storage.Users {
+		safeUsers = append(safeUsers, user)
+		safeUsers[len(safeUsers)-1].Password = ""
+	}
+
+	b, err := json.MarshalIndent(safeUsers, "", "    ")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer les utilisateurs", 500)
+		return
+	}
+
+	io.WriteString(w, string(b))
+}
+
+func getCurrentUser(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	context := getContext(r)
+	safeUser := context.User
+	safeUser.Password = ""
+
+	b, err := json.MarshalIndent(safeUser, "", "    ")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer l'utilisateur courant", 500)
+		return
+	}
+
+	io.WriteString(w, string(b))
+}
+
+func getUser(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	userTmp, _ := strconv.Atoi(c.URLParams["userId"])
+	userId := int64(userTmp)
+
+	safeUser := storage.Users[userId]
+	safeUser.Password = ""
+
+	b, err := json.MarshalIndent(safeUser, "", "    ")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de récupérer l'utilisateur", 500)
+		return
+	}
+
+	io.WriteString(w, string(b))
+}
+
+func updateUser(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	userTmp, _ := strconv.Atoi(c.URLParams["userId"])
+	userId := int64(userTmp)
+
+	var user storage.User
+	user = storage.Users[userId]
+
+	json.NewDecoder(r.Body).Decode(&user)
+
+	err := storage.UpdateUserInformations(user)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de modifier l'utilisateur", 500)
+		return
+	}
+
+	safeUser := user
+	safeUser.Password = ""
+
+	b, err := json.MarshalIndent(safeUser, "", "    ")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de modifier l'utilisateur", 500)
+		return
+	}
+
+	io.WriteString(w, string(b))
+
+}
+
+func createUser(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	var user storage.User
+
+	json.NewDecoder(r.Body).Decode(&user)
+
+	createdUser, err := storage.CreateUser(user)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de créer l'utilisateur", 500)
+	}
+
+	storage.Users[createdUser.Id] = createdUser
+
+	createdUser.Password = ""
+
+	b, err := json.MarshalIndent(createdUser, "", "    ")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de créer l'utilisateur", 500)
+		return
+	}
+
+	storage.Init(db)
+
+	io.WriteString(w, string(b))
+
+}
+
+func deleteUser(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	userTmp, _ := strconv.Atoi(c.URLParams["userId"])
+	userId := int64(userTmp)
+
+	if userId == 1 {
+		http.Error(w, "Impossible de supprimer l'utilisateur maître", 500)
+	}
+
+	err := storage.DeleteUser(userId)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Impossible de créer l'utilisateur", 500)
+		return
+	}
+}

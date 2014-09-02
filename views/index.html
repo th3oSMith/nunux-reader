@@ -48,6 +48,10 @@
           <span class="glyphicon glyphicon-cog"></span>
           Manage
         </a>
+        <a href="#admin" class="list-group-item" title="User Administration" ng-class="{active: $root.currentPage == 'admin'}">
+          <span class="glyphicon glyphicon-user"></span>
+          User Admin
+        </a>
       </div>
 
       <h2>
@@ -87,6 +91,7 @@
 <script src="lib/angular/angular.min.js"></script>
 <script src="lib/angular/angular-sanitize.min.js"></script>
 <script src="lib/ngUpload/ng-upload.min.js"></script>
+<script src="lib/angular-resource.js"></script>
 
 <script src="javascripts/app.js"></script>
 <script src="javascripts/modules/angular-mobile.js"></script>
@@ -94,6 +99,7 @@
 <script src="javascripts/modules/sidebar.js"></script>
 <script src="javascripts/modules/timeline.js"></script>
 <script src="javascripts/modules/manage.js"></script>
+<script src="javascripts/modules/admin.js"></script>
 <script src="javascripts/modules/lazy.js"></script>
 <script src="javascripts/modules/dialog.js"></script>
 <script src="javascripts/modules/qrcode.js"></script>

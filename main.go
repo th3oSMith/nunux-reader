@@ -70,6 +70,14 @@ func main() {
 	api.Put("/api/timeline/:timeline/:id", recoverArticle)
 	api.Delete("/api/timeline/:timeline", removeTimelineArticles)
 
+	// REST User
+	api.Get("/api/user", getUsers)
+	api.Get("/api/user/current", getCurrentUser)
+	api.Get("/api/user/:userId", getUser)
+	api.Post("/api/user", createUser)
+	api.Put("/api/user/:userId", updateUser)
+	api.Delete("/api/user/:userId", deleteUser)
+
 	// Application Angular
 	// On le met en dernier pour ne pas pourrir toutes les routes
 	goji.Get("/*", http.FileServer(http.Dir("public")))

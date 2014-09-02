@@ -1,0 +1,101 @@
+<div class="admin">
+  <header>
+    <h1>
+      <div class="glyphicon glyphicon-th-large" onclick="$('#wrapper').toggleClass('open');" title="Show main menu"></div>
+      <a>User Administration</a>
+  </h1>
+</header>
+<section data-ng-init="find()">
+    <div class="alert" ng-show="message" ng-class="message.clazz">{{message.text}}</div>
+    <div class="row">
+        <div class="col-md-5">
+            <form class="form-horizontal" role="form" name="addUser">
+            <fieldset>
+                <legend>Add User</legend>
+                <div class="form-group">
+                    <label form="username" class="control-label col-md-2">Username</label>
+                    <div class="col-md-4">
+                        <input type="text" name="username" ng-model="newUserUsername"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label form="password" class="control-label col-md-2">Password</label>
+                    <div class="col-md-3">
+                        <input type="password" name="password" ng-model="newUserPassword"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2">
+                        <button class="btn btn-default col-md-7" ng-click="createUser(newUserUsername, newUserPassword)">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+            </fieldset>
+            </form>
+        </div>
+        <div class="col-md-5">
+            <form class="form-horizontal" role="form" name="addUser">
+            <fieldset>
+                <legend>Edit User</legend>
+                <div class="form-group">
+                    <label form="username" class="control-label col-md-2">Username</label>
+                    <div class="col-md-4">
+                        <input type="text" name="username" ng-model="editUserUsername"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label form="password" class="control-label col-md-2">Password</label>
+                    <div class="col-md-3">
+                        <input type="password" placeholder="New Password" name="password" ng-model="editUserPassword"/>
+                    </div>
+                    <input type="hidden" ng-model="editUserId">
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2">
+                        <button class="btn btn-default col-md-7" ng-click="updateUser(editUserUsername, editUserPassword, editUserId)">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+            </fieldset>
+            </form>
+        </div>
+    </div>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Id
+                </th>
+                <th>
+                    User
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+        </thead>
+        <tbody class="user-list">
+        <tr ng-repeat="user in users | orderBy:'id'">
+            <td>{{user.id}}</td>
+            <td>
+                {{user.username}}
+                <span class="label label-primary" ng-if="user.id === 1">Admin</span>
+                <span class="label label-info" ng-if="user.id === loggedUser.id">Me</span>
+            </td>
+            <td>
+                <a ng-if="user.id !== 1" href="" class="delete" title="Remove User" ng-click="removeUser({{user.id}})">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+                <a href="" class="edit" title="Edit User" ng-click="editUser({{user.id}})">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</div>

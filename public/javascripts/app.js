@@ -20,7 +20,7 @@
 
 'use strict';
 
-angular.module('ReaderApp', ['SidebarModule', 'TimelineModule', 'ManageModule', 'ui.dialog'])
+angular.module('ReaderApp', ['SidebarModule', 'TimelineModule', 'ManageModule', 'AdminModule', 'ui.dialog', 'ngResource'])
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when('/timeline/:timeline', {
@@ -30,6 +30,10 @@ angular.module('ReaderApp', ['SidebarModule', 'TimelineModule', 'ManageModule', 
   .when('/manage', {
     templateUrl: 'views/manage.html',
     controller: 'ManageCtrl'
+  })
+  .when('/admin', {
+    templateUrl: 'views/admin.html',
+    controller: 'AdminCtrl'
   })
   .otherwise({
     redirectTo: '/timeline/global'
