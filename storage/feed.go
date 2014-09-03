@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/th3osmith/rss"
 	"log"
 	"strconv"
@@ -15,7 +16,7 @@ func CreateFeed(url string, c Context, insecure bool, credentials rss.Credential
 	var id int64
 
 	// On regarde si le flux existe déjà
-	err = db.QueryRow("SELECT id FROM feed WHERE updateUrl = ?", url).Scan(&id)
+	err = db.QueryRow("SELECT id FROM feed WHERE updateUrl = ? AND username = ?", url, credentials.Username).Scan(&id)
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
@@ -63,7 +64,10 @@ func CreateFeed(url string, c Context, insecure bool, credentials rss.Credential
 		return feed, nil
 	}
 
-	log.Println("Flux existant")
+	if _, ok := c.Feeds[id]; ok {
+		return nil, errors.New("Already Subscribed")
+	}
+
 	oldFeed := Feeds[id]
 
 	c.Feeds[id] = oldFeed
