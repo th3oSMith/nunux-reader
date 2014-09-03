@@ -57,10 +57,18 @@ func pleaseAuth(w http.ResponseWriter) {
 
 func isUser(credentials string, auth string) bool {
 
+	userCredentials := strings.Split(credentials, ":")
+
+	if len(userCredentials) != 2 {
+		return false
+	}
+
 	for _, user := range storage.Users {
-		if credentials == user.Username+":"+user.Password {
-			storage.CurrentUsers[auth] = user
-			storage.InitUser(user)
+		if userCredentials[0] == user.Username && storage.Sha256Sum(userCredentials[1]) == user.Password {
+			userWithPwd := user
+			userWithPwd.Password = userCredentials[1]
+			storage.CurrentUsers[auth] = userWithPwd
+			storage.InitUser(userWithPwd)
 			storage.UpdateUser(user.Id) // Magic
 			return true
 		}

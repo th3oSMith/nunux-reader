@@ -36,7 +36,12 @@ func CreateFeed(url string, c Context, insecure bool, credentials rss.Credential
 			return nil, err
 		}
 
-		res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread, feed.Insecure, feed.Credentials.Username, feed.Credentials.Password)
+		cryptedPassword, err := Encrypt(feed.Credentials.Password, c.User.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := stmt.Exec(feed.Nickname, feed.Title, feed.Description, feed.Link, feed.UpdateURL, feed.Refresh, feed.Unread, feed.Insecure, feed.Credentials.Username, cryptedPassword)
 		if err != nil {
 			return nil, err
 		}

@@ -67,6 +67,14 @@ func InitUser(user User) {
 		for _, t := range timelinesIds {
 			UserTimelines[user.Id][t.Id] = Timelines[t.Id]
 			UserFeeds[user.Id][t.Feed.Id] = Feeds[t.Feed.Id]
+
+			if len(UserFeeds[user.Id][t.Feed.Id].Credentials.Password) > 0 {
+				plainPwd, _ := Decrypt(UserFeeds[user.Id][t.Feed.Id].Credentials.Password, user.Password)
+				UserFeeds[user.Id][t.Feed.Id].Credentials.Password = plainPwd
+				Feeds[t.Feed.Id].Credentials.Password = plainPwd
+
+			}
+			log.Println("Pwd", UserFeeds[user.Id][t.Feed.Id].Credentials.Password)
 		}
 	}
 
@@ -186,7 +194,7 @@ func UpdateUserInformations(user User) (err error) {
 		return err
 	}
 
-	_, err = stmt.Exec(user.Username, user.Password, user.Id)
+	_, err = stmt.Exec(user.Username, Sha256Sum(user.Password), user.Id)
 	if err != nil {
 		return err
 	}
