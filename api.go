@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type TimelineData struct {
@@ -221,14 +220,6 @@ func addSubscription(w http.ResponseWriter, r *http.Request) {
 	// Création du Flux
 	feed, err := storage.CreateFeed(v.Url, c, v.Insecure, rss.Credentials{Username: v.Username, Password: v.Password})
 	if err != nil {
-		if strings.Contains(err.Error(), "unknown authority") {
-			http.Error(w, "Certificat signed by unknown authority", 500)
-			return
-		}
-		if v.Username != "" && strings.Contains(err.Error(), "<feed>") {
-			http.Error(w, "Wrong Login/Password", 500)
-			return
-		}
 		http.Error(w, err.Error(), 500)
 		return
 	}
