@@ -218,7 +218,7 @@ func GetGlobalArticles(nextId int64, c Context) (articles []rss.Item, err error)
 	if len(c.Timelines) > 0 {
 		sql = sql[:len(sql)-3]
 	} else {
-		sql = sql[:len(sql)-6]
+		return nil, nil
 	}
 
 	sql += ") ORDER BY a.pubdate ASC LIMIT ?"
