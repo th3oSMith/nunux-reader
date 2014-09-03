@@ -74,7 +74,6 @@ func InitUser(user User) {
 				Feeds[t.Feed.Id].Credentials.Password = plainPwd
 
 			}
-			log.Println("Pwd", UserFeeds[user.Id][t.Feed.Id].Credentials.Password)
 		}
 	}
 
