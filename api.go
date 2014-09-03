@@ -501,6 +501,8 @@ func updateUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	storage.Init(db)
+
 	io.WriteString(w, string(b))
 
 }
@@ -551,4 +553,6 @@ func deleteUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Impossible de créer l'utilisateur", 500)
 		return
 	}
+
+	storage.Init(db)
 }
