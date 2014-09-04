@@ -21,8 +21,9 @@ var db *sql.DB
 
 // Paramètres
 var MaxArticles int
+var UpdateTime, DeleteTime int
 
-func Init(sqlDB *sql.DB) {
+func Init(sqlDB *sql.DB, p Parameters) {
 
 	db = sqlDB
 	log.Println("Module de stockage chargé")
@@ -60,7 +61,9 @@ func Init(sqlDB *sql.DB) {
 	}
 
 	// Initialisation des paramètres
-	MaxArticles = 10
+	MaxArticles = p.MaxArticles
+	UpdateTime = p.UpdateTime
+	DeleteTime = p.DeleteTime
 
 	// Initialisation des map pour les utilisateurs
 	UserFeeds = make(map[int64]map[int64]*rss.Feed)
@@ -97,4 +100,18 @@ func SaveKnown(known map[string]struct{}) (err error) {
 	ioutil.WriteFile("known.db", data, 0600)
 
 	return
+}
+
+type DatabaseParameters struct {
+	Host     string `json:"host"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Database string `json:"database"`
+}
+
+type Parameters struct {
+	Database    DatabaseParameters `json:"database"`
+	UpdateTime  int                `json:"updateTime"`
+	MaxArticles int                `json:"maxArticles"`
+	DeleteTime  int                `json:"deleteTime"`
 }

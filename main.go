@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/th3osmith/nunux-reader/storage"
 	"github.com/zenazn/goji"
@@ -10,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 var db *sql.DB
@@ -17,11 +19,24 @@ var db *sql.DB
 func main() {
 
 	log.Println("Lancement de Nunux-Reader")
+	var err error
+
+	log.Println("Chargement des paramètres")
+	var p storage.Parameters
+	file, err := os.Open("parameters.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = json.NewDecoder(file).Decode(&p)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Ouverture de la connexion à la base SQL
 	log.Println("Ouverture de la connexion MySQL")
-	var err error
-	db, err = sql.Open("mysql", "admin:mypass@tcp(127.0.0.1:3306)/nunux?parseTime=1")
+	connexionInfos := p.Database.User + ":" + p.Database.Password + "@tcp(" + p.Database.Host + ":3306)/" + p.Database.Database + "?parseTime=1"
+	db, err = sql.Open("mysql", connexionInfos)
 
 	if err != nil {
 		log.Fatal(err)
@@ -38,7 +53,7 @@ func main() {
 
 	// Initialisation des modules
 	log.Println("---Initialisation des modules---")
-	storage.Init(db)
+	storage.Init(db, p)
 	InitUpdater()
 	InitDeleter()
 

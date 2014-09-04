@@ -492,7 +492,7 @@ func updateUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage.Init(db)
+	//storage.Init(db)
 
 	io.WriteString(w, string(b))
 
@@ -522,7 +522,7 @@ func createUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage.Init(db)
+	//storage.Init(db)
 
 	io.WriteString(w, string(b))
 
@@ -545,5 +545,5 @@ func deleteUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storage.Init(db)
+	//storage.Init(db)
 }

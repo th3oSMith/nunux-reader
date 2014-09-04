@@ -24,7 +24,7 @@ func NewDeleter() *deleter {
 }
 
 func (u *deleter) Run() {
-	ticker := time.NewTicker(24 * time.Hour)
+	ticker := time.NewTicker(time.Duration(storage.DeleteTime) * time.Minute)
 	Delete()
 
 	for {
