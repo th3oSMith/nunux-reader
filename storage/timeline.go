@@ -263,7 +263,7 @@ func GetGlobalArticlesSize(c Context) (size int, err error) {
 	if len(c.Timelines) > 0 {
 		sql = sql[:len(sql)-3]
 	} else {
-		sql = sql[:len(sql)-6]
+		return 0, nil
 	}
 	sql += ")"
 	err = db.QueryRow(sql, args...).Scan(&size)
