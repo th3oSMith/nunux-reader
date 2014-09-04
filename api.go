@@ -492,7 +492,10 @@ func updateUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//storage.Init(db)
+	err = storage.LoadUsers()
+	if err != nil {
+		log.Println(err)
+	}
 
 	io.WriteString(w, string(b))
 
@@ -522,7 +525,10 @@ func createUser(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//storage.Init(db)
+	err = storage.LoadUsers()
+	if err != nil {
+		log.Println(err)
+	}
 
 	io.WriteString(w, string(b))
 
@@ -541,9 +547,12 @@ func deleteUser(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Impossible de créer l'utilisateur", 500)
+		http.Error(w, "Impossible de supprimer l'utilisateur", 500)
 		return
 	}
 
-	//storage.Init(db)
+	err = storage.LoadUsers()
+	if err != nil {
+		log.Println(err)
+	}
 }

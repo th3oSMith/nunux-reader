@@ -88,12 +88,12 @@ func main() {
 	// REST User
 
 	admin := web.New()
+	goji.Get("/admin/user/current", getCurrentUser)
 	goji.Handle("/admin/*", admin)
 	admin.Use(SuperSecure)
 	admin.Use(Admin)
 
 	admin.Get("/admin/user", getUsers)
-	admin.Get("/admin/user/current", getCurrentUser)
 	admin.Get("/admin/user/:userId", getUser)
 	admin.Post("/admin/user", createUser)
 	admin.Put("/admin/user/:userId", updateUser)

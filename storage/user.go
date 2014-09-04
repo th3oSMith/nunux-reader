@@ -125,7 +125,7 @@ func CreateUser(user User) (createdUser User, err error) {
 		return User{}, err
 	}
 
-	res, err = stmt.Exec(user.Username, user.Password, lastId)
+	res, err = stmt.Exec(user.Username, Sha256Sum(user.Password), lastId)
 	if err != nil {
 		return User{}, err
 	}
