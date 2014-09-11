@@ -118,6 +118,8 @@ func CreateUser(user User) (createdUser User, err error) {
 		return User{}, err
 	}
 
+	stmt.Close()
+
 	// Insertion de l'utilisateur
 	stmt, err = db.Prepare("INSERT INTO user(username, password, saved_timeline_id) VALUES(?, ?, ?)")
 
@@ -134,6 +136,8 @@ func CreateUser(user User) (createdUser User, err error) {
 	if err != nil {
 		return User{}, err
 	}
+
+	stmt.Close()
 
 	user.Id = lastId
 	return user, nil
@@ -167,6 +171,8 @@ func DeleteUser(userId int64) (err error) {
 	}
 	delete(Users, c.User.Id)
 
+	stmt.Close()
+
 	stmt, err = db.Prepare("DELETE FROM timeline WHERE id = ?;")
 
 	if err != nil {
@@ -177,6 +183,9 @@ func DeleteUser(userId int64) (err error) {
 	if err != nil {
 		return err
 	}
+
+	stmt.Close()
+
 	delete(Archives, c.Archive.Id)
 	delete(UserTimelines, c.User.Id)
 	delete(UserFeeds, c.User.Id)
@@ -197,6 +206,8 @@ func UpdateUserInformations(user User) (err error) {
 	if err != nil {
 		return err
 	}
+
+	stmt.Close()
 
 	Users[user.Id] = user
 	return nil

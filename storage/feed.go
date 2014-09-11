@@ -61,6 +61,7 @@ func CreateFeed(url string, c Context, insecure bool, credentials rss.Credential
 			return nil, err
 		}
 
+		stmt.Close()
 		return feed, nil
 	}
 
@@ -143,7 +144,7 @@ func SaveArticle(id int64, c Context) (err error) {
 	}
 
 	c.Archive.Size++
-
+	stmt2.Close()
 	return nil
 
 }
@@ -201,6 +202,9 @@ func SaveArticles(articles []*rss.Item, feedId int64) (err error) {
 
 	}
 
+	stmt.Close()
+	stmt2.Close()
+
 	// On met à jour les timelines en mémoire
 	LoadTimelines()
 	UpdateUsers()
@@ -234,6 +238,7 @@ func RemoveFeed(feedId int64) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	// Suppression du flux
 	stmt, err = db.Prepare("DELETE FROM feed WHERE id = ?;")
 
@@ -246,6 +251,7 @@ func RemoveFeed(feedId int64) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	return nil
 
 }
@@ -294,6 +300,7 @@ func SoftRemoveArticle(id int64, timelineName string, c Context) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	return nil
 
 }
@@ -341,6 +348,7 @@ func RecoverArticle(id int64, timelineName string, c Context) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	return nil
 
 }
@@ -376,6 +384,8 @@ func RemoveArticle(id int64, timelineId int64) (err error) {
 		return nil
 	}
 
+	stmt.Close()
+
 	if number == 0 {
 		stmt, err = db.Prepare("DELETE FROM article WHERE id = ?;")
 
@@ -387,6 +397,7 @@ func RemoveArticle(id int64, timelineId int64) (err error) {
 		if err != nil {
 			return err
 		}
+		stmt.Close()
 	}
 
 	return nil
@@ -425,6 +436,7 @@ func RemoveTimelineArticles(timelineName string, c Context) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	return nil
 
 }

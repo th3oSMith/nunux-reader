@@ -155,6 +155,7 @@ func CreateTimeline(title string, feed *rss.Feed, c Context) (err error) {
 		return err
 	}
 
+	stmt.Close()
 	return nil
 
 }
@@ -303,6 +304,8 @@ func RemoveTimeline(feedId int64, c Context) (err error) {
 		return err
 	}
 
+	stmt.Close()
+
 	// Suppression de la timeline
 	stmt, err = db.Prepare("DELETE FROM timeline WHERE id = ?;")
 
@@ -314,6 +317,8 @@ func RemoveTimeline(feedId int64, c Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	stmt.Close()
 
 	// On la supprime également de la mémoire
 	delete(Timelines, timelineId)
