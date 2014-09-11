@@ -61,7 +61,7 @@ DROP TABLE IF EXISTS article_timelines;
 CREATE TABLE article_timelines (
                       article_id INT(4) NOT NULL,
                       timeline_id INT(4) NOT NULL,
-                      delete_date DATE,
+                      delete_date DATE NULL,
                       FOREIGN KEY (article_id) REFERENCES article(id),
                       FOREIGN KEY (timeline_id) REFERENCES timeline(id)
                       ) ENGINE=INNODB;
