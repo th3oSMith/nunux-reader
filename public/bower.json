@@ -1,0 +1,33 @@
+{
+  "name": "Greader",
+  "version": "0.0.1",
+  "homepage": "https://github.com/th3osmith/nunux-reader",
+  "authors": [
+    "Rémi Robert <th3o.smith@gmail.com>"
+  ],
+  "description": "Go RSS Reader based on Nunux Reader",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "html5shiv": "~3.7.2",
+    "angular": "~1.2.26",
+    "moment": "~2.8.3",
+    "humane-js": "~3.2.0",
+    "ngUpload": "~0.5.11",
+    "qrcode-generator": "git://github.com/monospaced/bower-qrcode-generator.git#0.0.0",
+    "revolunet-angular-carousel": "~0.2.5",
+    "mousetrap": "~1.4.6",
+    "angular-sanitize": "~1.2.26",
+    "angular-bootstrap": "~0.11.2",
+    "angular-resource": "~1.2.26",
+    "angular-route": "~1.2.26"
+  }
+}
