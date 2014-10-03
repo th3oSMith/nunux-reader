@@ -1,4 +1,4 @@
-public/components/
+public/lib/
 node_modules/
 public/stylesheets/*.css
 public-build/
