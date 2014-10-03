@@ -8,7 +8,6 @@ angular.module('SidebarModule', ['AdminModule'])
       $scope.timelines = data;
       $scope.globalSize = data[0].size;
       $scope.archiveSize = data[1].size;
-      console.log($scope.timelines)
     });
   };
 
@@ -81,8 +80,8 @@ angular.module('SidebarModule', ['AdminModule'])
 
   $scope.isAdmin = Users.currentUser({userId: "current"});
 
-  $scope.isAdmin.$then(function (user){
-    if (user.data.id === 1) {
+  $scope.isAdmin.$promise.then(function (user){
+    if (user.id === 1) {
       $scope.isAdmin = true;
     }
   });

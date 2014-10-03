@@ -14,12 +14,13 @@ angular.module('ui.lazy', [])
   var renderDelay = 100;
 
   // Caching the window element as a jQuery reference.
-  var win = $($window);
+  var win = angular.element(window);
 
   // Define container holder.
-  var container = '.timeline';
+  var container = document.getElementsByClassName("timeline");
+
   // Determine the viewport boudaries.
-  var boundaries = $(container)[0].getBoundingClientRect();
+  var boundaries = container[0].getBoundingClientRect();
 
   // I determine if the window dimension events
   // (ie. resize, scroll) are currenlty being

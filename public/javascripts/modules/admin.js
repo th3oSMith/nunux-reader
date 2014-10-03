@@ -18,9 +18,9 @@ angular.module('AdminModule', [])
   $scope.find = function() {
     $scope.usersTmp = Users.query();
 
-    $scope.usersTmp.$then(function(data){
-      for (var x = 0; x< data.data.length ; x++) {
-        $scope.users[data.data[x].id] = data.data[x];
+    $scope.usersTmp.$promise.then(function(data){
+      for (var x = 0; x< data.length ; x++) {
+        $scope.users[data[x].id] = data[x];
         console.log($scope.users);
       }
     })

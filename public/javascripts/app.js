@@ -20,7 +20,7 @@
 
 'use strict';
 
-angular.module('ReaderApp', ['SidebarModule', 'TimelineModule', 'ManageModule', 'AdminModule', 'ui.dialog', 'ngResource'])
+angular.module('ReaderApp', ['SidebarModule', 'TimelineModule', 'ManageModule', 'AdminModule', 'ui.dialog', 'ngResource', 'ngRoute','ui.bootstrap' ])
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when('/timeline/:timeline', {

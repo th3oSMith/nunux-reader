@@ -25,13 +25,12 @@ func NewUpdater() *updater {
 }
 
 func (u *updater) Run() {
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(time.Duration(storage.UpdateTime) * time.Minute)
 	Update()
 
 	for {
 		select {
 		case <-ticker.C:
-			log.Println("Lancement de la mise à jour")
 			Update()
 		case <-u.quit:
 			ticker.Stop()
@@ -60,7 +59,6 @@ func Update() (err error) {
 	}
 
 	// Sauvegarde de l'état du parseur RSS
-	log.Println("Sauvegarde de l'état du parseur")
 	storage.SaveKnown(rss.GetState())
 
 	return err

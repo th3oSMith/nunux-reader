@@ -39,14 +39,14 @@ angular.module('TimelineModule', ['angular-carousel', 'ui.qrcode', 'ui.lazy'])
     if ($scope.busy || $scope.isEnded) return;
     console.log('Fetching articles...');
     $scope.busy = true;
-    var params = $.param({
+    var params = {
       next: $scope.next,
       order: $scope.order,
       show: $scope.show
-    });
-    var url = $scope.url + '?' + params;
+    };
+
     initializing = false;
-    $http.get(url).success(function(data) {
+    $http.get($scope.url, {params: params}).success(function(data) {
       $scope.isEnded = !data.next;
       if ($scope.isEnded) {
         var end = {
@@ -244,26 +244,35 @@ angular.module('TimelineModule', ['angular-carousel', 'ui.qrcode', 'ui.lazy'])
       var baseUrl = pathArray[0] + '//' + pathArray[2];
 
       $scope.$watch(attrs.timelineArticle, function(value) {
-        var $content = $('<div>').html(value);
-        $('script', $content).filter('script[src^="http://feeds.feedburner.com"]').remove();
-        $('a', $content).each(function() {
-          $(this).attr('target', '_blank');
-          var href = $(this).attr('href');
-          if(href && !href.match(/^\s*http/g)) {
-            $(this).attr('href', baseUrl + '/' + href);
+        var $content = angular.element('<div>').html(value);
+
+      [].forEach.call($content[0].querySelectorAll('script'), function(el) {
+        if (el.src.match(/^http:\/\/feeds.feedburner.com/)) {
+          el.parent.removeChild(el);
+        }
+      });
+
+      [].forEach.call($content[0].querySelectorAll('a'), function(el) {
+        var href = el.href;
+        if (href && !href.match(/^\s*http/g)) {
+          el.setAttribute("href", baseUrl + '/' + href);
+        }
+      });
+
+      [].forEach.call($content[0].querySelectorAll('img'), function(el) {
+        var src = el.getAttribute('data-src');
+        if (src) {
+          if(!src.match(/^\s*http/g)) {
+            src = baseUrl + '/' + src;
           }
-        });
-        $('img', $content).each(function() {
-          var src = $(this).attr('data-src');
-          if (src) {
-            if(!src.match(/^\s*http/g)) {
-              src = baseUrl + '/' + src;
-            }
-          $(this).attr('ui-lazy-load', src);
-            $(this).removeAttr('data-src');
-          }
-        });
-        $elem.html($compile($('<div>').append($content).html())($scope));
+        el.setAttribute('ui-lazy-load', src);
+        el.removeAttribute('data-src');
+        }
+      });
+      
+
+      $elem.html(angular.element('<div>').append($content).html());
+
       });
     }
   };

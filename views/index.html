@@ -3,7 +3,7 @@
   <head>
 
   <meta charset="utf-8">
-  <title>Nunux Reader</title>
+  <title>Greader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <meta name="description" content="RSS Reader" />
   <meta name="author" content="">
@@ -31,7 +31,7 @@
 
     <div id="sidebar" ng-controller="SidebarCtrl">
       <div id="logo">
-        <h1>Nunux Reader</h1>
+        <h1>Greader</h1>
       </div>
       <div class="list-group">
         <a href="#timeline/global" target="_self" class="list-group-item" title="View all fresh items [g h]" ng-class="{active: $root.currentPage == 'global'}">
@@ -82,16 +82,18 @@
 </div>
 
 
-<script src="lib/jquery/jquery.min.js"></script>
-<script src="lib/bootstrap/bootstrap.min.js"></script>
-<script src="lib/moment/moment.min.js"></script>
-<script src="lib/qrcode-generator/qrcode.js"></script>
+
+
+<script src="lib/angular/angular.min.js"></script>
+<script src="lib/angular-bootstrap/ui-bootstrap.min.js"></script>
+<script src="lib/angular-resource/angular-resource.min.js"></script>
+<script src="lib/angular-route/angular-route.min.js"></script>
+<script src="lib/angular-sanitize/angular-sanitize.min.js"></script>
+<script src="lib/qrcode-generator/js/qrcode.js"></script>
+<script src="lib/moment/min/moment.min.js"></script>
 <script src="lib/humane-js/humane.min.js"></script>
 <script src="lib/mousetrap/mousetrap.min.js"></script>
-<script src="lib/angular/angular.min.js"></script>
-<script src="lib/angular/angular-sanitize.min.js"></script>
 <script src="lib/ngUpload/ng-upload.min.js"></script>
-<script src="lib/angular-resource.js"></script>
 
 <script src="javascripts/app.js"></script>
 <script src="javascripts/modules/angular-mobile.js"></script>
@@ -104,9 +106,19 @@
 <script src="javascripts/modules/dialog.js"></script>
 <script src="javascripts/modules/qrcode.js"></script>
 <script>
+
+
 function toggleMenu() {
-  $('#wrapper').toggleClass('open');
+  
+  var wrapper = document.getElementById("wrapper");
+
+  if (wrapper.className === "open")
+    wrapper.className = "";
+  else
+    wrapper.className = "open";
 }
+
+
 </script>
 </body>
 </html>
