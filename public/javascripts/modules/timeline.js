@@ -253,7 +253,7 @@ angular.module('TimelineModule', ['angular-carousel', 'ui.qrcode', 'ui.lazy'])
       });
 
       [].forEach.call($content[0].querySelectorAll('a'), function(el) {
-        var href = el.href;
+        var href = el.getAttribute('href');
         if (href && !href.match(/^\s*http/g)) {
           el.setAttribute("href", baseUrl + '/' + href);
         }
