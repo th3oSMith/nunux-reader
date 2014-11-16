@@ -1,71 +1,16 @@
-[![Build Status](https://travis-ci.org/ncarlier/nunux-reader.svg)](https://travis-ci.org/ncarlier/nunux-reader)
+# GREADER
 
-# NUNUX Reader
-
-The super-fast-minimalist-nosql-opensource Google Reader revival.
+Rewriting in Go of ncarlier nunux-reader
 
 Features:
 
- * Faster than light thanks to Redis and Node.js
  * Dynamic GUI thanks to AngularJS
  * Responsive Web Design
- * Login with Google OpenID or Mozilla Persona
  * OPML import/export
  * Manage subscriptions
- * Auto read article on scroll
  * Save articles
  * Keep article as not read
- * Powerfull reactive aggregator daemon
- * Support of PubSubHubbud
  * RESTFul JSON API
- * 99% Javascript!
-
-## Installation guide
-### Prerequisites
-
-* [git](http://git-scm.com/)
-* [nodejs](http://nodejs.org/) v0.8.x
-* [redis](http://redis.io/) v2.2
-
-#### Install Git and Redis (on Debian Wheezy)
-
-        sudo aptitude install git redis-server
-
-#### Install Node.JS
-
-See following installation procedure : [https://github.com/joyent/node/wiki/Installation](https://github.com/joyent/node/wiki/Installation)
-
-#### Install Grunt
-
-        sudo npm install -g grunt-cli
-
-### Install Web Site
-
-    cd ~/local/var/lib
-    git clone git@github.com:ncarlier/nunux-reader.git
-    cd reader
-    npm install
-
-### Run Web Site
-
-    #!/bin/sh
-    # See etc/default/reader-server for environment configuration.
-    node app.js 2>&1 >> app.log
-
-### Jobs
-
-* **clean-db.js**: Clean database (aka remove old articles). Usage:
-
-        ./bin/clean-db.js -v --days 30
-
-* **feed-updater.js**: Update feeds content. It's a daemon. Use CTRL+C to stop. Usage:
-
-        ./bin/feed-updater.js -v
-
-* **timeline-updater.js**: Update users timelines. It's a daemon. Use CTRL+C to stop. Usage:
-
-        ./bin/timeline-updater.js -v
-
 
 ## API
 
@@ -76,7 +21,7 @@ See *API.md*.
 
 NUNUX Reader
 
-Copyright (c) 2013 Nicolas CARLIER (https://github.com/ncarlier)
+Copyright (c) 2014 Th3oSMith (https://github.com/th3osmith)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
