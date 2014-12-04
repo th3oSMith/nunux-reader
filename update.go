@@ -48,13 +48,15 @@ func Update() (err error) {
 		articles, err := feed.GetNew()
 
 		if err != nil {
-			return err
+			log.Println(err)
+			continue
 		}
 		log.Println("Récupération de ", len(articles), "articles")
 
 		err = storage.SaveArticles(articles, feed.Id)
 		if err != nil {
-			return err
+			log.Println(err)
+			continue
 		}
 	}
 
